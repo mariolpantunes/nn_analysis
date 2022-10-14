@@ -1,89 +1,127 @@
 
+from matplotlib.pyplot import cla
 from tensorflow.keras.models import Sequential
-from tensorflow.keras.layers import Dense, Flatten, Conv2D, MaxPooling2D, Dropout
-from tensorflow.keras.losses import sparse_categorical_crossentropy
+from tensorflow.keras.layers import Dense, Flatten, Conv2D, MaxPooling2D, BatchNormalization, GRU
+from scikeras.wrappers import KerasClassifier, KerasRegressor
+
 
 opto = "adam" #["adam","adadelta","adagrad","adamax","nadam","ftrl","sgd","rmsprop"]
 
-def create_dense_model():
-    model = Sequential()
-    model.add(Dense(units=10, input_dim=10,activation='relu'))
-    model.add(Dense(units=1,activation='linear'))
-    model.compile(optimizer=opto, loss='mean_squared_error')
+def create_dense_model(classifier):
 
-    return model
-
-
-def create_cnn_model():
-
-    loss_function = sparse_categorical_crossentropy
-    no_classes = 10
-
-    input_shape = (32, 32, 3)
-
-    model = Sequential()
-    model.add(Conv2D(32, kernel_size=(3, 3), activation='relu', input_shape=input_shape))
-    model.add(MaxPooling2D(pool_size=(2, 2)))
-    model.add(Conv2D(64, kernel_size=(3, 3), activation='relu'))
-    model.add(MaxPooling2D(pool_size=(2, 2)))
-    model.add(Conv2D(128, kernel_size=(3, 3), activation='relu'))
-    model.add(MaxPooling2D(pool_size=(2, 2)))
-    model.add(Flatten())
-    model.add(Dense(256, activation='relu'))
-    model.add(Dense(128, activation='relu'))
-    model.add(Dense(no_classes, activation='softmax'))
-
-    model.compile(loss=loss_function, optimizer=opto)
-
-    return model
-
-def create_fashion_model():
-    image_shape = (28,28,1) 
-
-    cnn_model = Sequential([
-        Conv2D(filters=32,kernel_size=3,activation='relu',input_shape = image_shape),
-        MaxPooling2D(pool_size=2) ,
-        Dropout(0.2),
-        Flatten(),
-        Dense(32,activation='relu'),
-        Dense(10,activation = 'softmax')
+    def model(input_shape, hidden_layer_dim, n_hidden_layers, activation_function, task_activation, task_nodes):
+        model = Sequential()
+        model.add(Dense(units=hidden_layer_dim, input_shape=input_shape, activation=activation_function))
+        for i in range(n_hidden_layers -1):
+            model.add(Dense(units=hidden_layer_dim, activation=activation_function))
         
-    ])
+        model.add(Dense(units=task_nodes,activation=task_activation))
+        
+        return model
 
-    cnn_model.compile(loss ='sparse_categorical_crossentropy', optimizer=opto)
+    if classifier:
+        return KerasClassifier(model=model, 
+                            verbose=0, 
+                            input_shape=(768,),
+                            hidden_layer_dim=10,
+                            n_hidden_layers = 1,
+                            activation_function = 'relu',
+                            task_activation = 'linear',
+                            task_nodes = 1,
+                            optimizer='adam',
+                            loss='mean_squared_error'
+                            )
 
-def create_imdb_model():
+    return KerasRegressor(model=model, 
+                            verbose=0, 
+                            input_shape=(768,),
+                            hidden_layer_dim=10,
+                            n_hidden_layers = 1,
+                            activation_function = 'relu',
+                            task_activation = 'linear',
+                            task_nodes = 1,
+                            optimizer='adam',
+                            loss='mean_squared_error'
+                            )
 
-    model = Sequential()
-    model.add(Dense(16, activation='relu', input_shape=(10000,)))        
-    model.add(Dense(16, activation='relu'))                     
-    model.add(Dense(1, activation='sigmoid'))
-                                                                                
 
-    model.compile(optimizer=opto,                          
-                loss='binary_crossentropy')
+def create_cnn_model(classifier):
 
-def create_IRIS_model():
+    def model(input_shape, n_kernels, kernel_size, pool_size, activation_function, n_hidden_layers, task_activation, task_nodes):
+        model = Sequential()
+        model.add(Conv2D(n_kernels, kernel_size=kernel_size, activation=activation_function, input_shape=input_shape))
+        model.add(MaxPooling2D(pool_size=pool_size))
+        model.add(BatchNormalization())
+        for i in range(n_hidden_layers-1):
+            model.add(Conv2D(n_kernels, kernel_size=kernel_size, activation=activation_function))
+            model.add(MaxPooling2D(pool_size=pool_size))
+            model.add(BatchNormalization())
 
-    network = Sequential()
-    network.add(Dense(512, activation='relu', input_shape=(4,)))
-    network.add(Dense(3, activation='softmax'))
+        model.add(Flatten())
+        model.add(Dense(256, activation=activation_function))
+        model.add(Dense(128, activation=activation_function))
+        model.add(Dense(task_nodes, activation=task_activation))
 
-    network.compile(optimizer=opto,
-                    loss='categorical_crossentropy')
+        return model
+    
+    if classifier:
+        return KerasClassifier(model=model, 
+                            verbose=0, 
+                            input_shape=(768,),
+                            hidden_layer_dim=10,
+                            n_hidden_layers = 1,
+                            activation_function = 'relu',
+                            task_activation = 'linear',
+                            task_nodes = 1,
+                            optimizer='adam',
+                            loss='mean_squared_error'
+                            )
 
-def create_mnist_model():
+    return KerasRegressor(model=model, 
+                            verbose=0, 
+                            input_shape=(32,32,),
+                            n_kernels=32,
+                            kernel_size=(3,3),
+                            pool_size = 2,
+                            n_hidden_layers = 1,
+                            activation_function = "relu",
+                            task_activation = "linear",
+                            task_nodes = 1
+                            )
 
-    model = Sequential() 
-    model.add(Dense(512, activation= 'relu', input_shape=(28 * 28,)))
-    model.add(Dense(10, activation='softmax' ))    
+def create_gru_model(classifier):
 
-    model.compile(optimizer= opto,                                  
-            loss='categorical_crossentropy')
+    def model(input_shape, hidden_layer_dim, n_hidden_layers, activation_function, task_activation, task_nodes):
 
-def create_sonar_model():
-    model = Sequential()
-    model.add(Dense(60, input_dim=60, activation='relu'))
-    model.add(Dense(1, activation='sigmoid'))
+        return_sequences = True if n_hidden_layers > 1 else False
 
-    model.compile(loss='binary_crossentropy', optimizer=opto)
+        model = Sequential()
+        model.add(GRU(units=hidden_layer_dim, input_shape=input_shape, activation=activation_function))
+        for i in range(n_hidden_layers -1):
+            model.add(GRU(units=hidden_layer_dim, activation=activation_function, return_sequences=return_sequences))
+            return_sequences = True if n_hidden_layers > 1 else False
+        
+        model.add(Dense(units=task_nodes,activation=task_activation))
+
+        return model
+
+    if classifier:
+        KerasClassifier(model=model, 
+                            verbose=0, 
+                            input_shape=(10,10),
+                            hidden_layer_dim=10,
+                            n_hidden_layers = 1,
+                            activation_function = "relu",
+                            task_activation = 'linear',
+                            task_nodes = 1
+                            )
+
+    return KerasRegressor(model=model, 
+                            verbose=0, 
+                            input_shape=(10,10),
+                            hidden_layer_dim=10,
+                            n_hidden_layers = 1,
+                            activation_function = "relu",
+                            task_activation = 'linear',
+                            task_nodes = 1
+                            )
