@@ -1,11 +1,7 @@
 
-from matplotlib.pyplot import cla
 from tensorflow.keras.models import Sequential
 from tensorflow.keras.layers import Dense, Flatten, Conv2D, MaxPooling2D, BatchNormalization, GRU
 from scikeras.wrappers import KerasClassifier, KerasRegressor
-
-
-opto = "adam" #["adam","adadelta","adagrad","adamax","nadam","ftrl","sgd","rmsprop"]
 
 def create_dense_model(classifier):
 
@@ -26,7 +22,7 @@ def create_dense_model(classifier):
                             hidden_layer_dim=10,
                             n_hidden_layers = 1,
                             activation_function = 'relu',
-                            task_activation = 'linear',
+                            task_activation = 'softmax',
                             task_nodes = 1,
                             optimizer='adam',
                             loss='mean_squared_error'
@@ -67,14 +63,14 @@ def create_cnn_model(classifier):
     if classifier:
         return KerasClassifier(model=model, 
                             verbose=0, 
-                            input_shape=(768,),
-                            hidden_layer_dim=10,
+                            input_shape=(32,32,),
+                            n_kernels=32,
+                            kernel_size=(3,3),
+                            pool_size = 2,
                             n_hidden_layers = 1,
-                            activation_function = 'relu',
-                            task_activation = 'linear',
-                            task_nodes = 1,
-                            optimizer='adam',
-                            loss='mean_squared_error'
+                            activation_function = "relu",
+                            task_activation = "softmax",
+                            task_nodes = 1
                             )
 
     return KerasRegressor(model=model, 
@@ -106,14 +102,15 @@ def create_gru_model(classifier):
         return model
 
     if classifier:
-        KerasClassifier(model=model, 
+        return KerasClassifier(model=model, 
                             verbose=0, 
                             input_shape=(10,10),
                             hidden_layer_dim=10,
                             n_hidden_layers = 1,
                             activation_function = "relu",
-                            task_activation = 'linear',
-                            task_nodes = 1
+                            task_activation = 'softmax',
+                            task_nodes = 1,
+                            loss= "categorical_crossentropy"
                             )
 
     return KerasRegressor(model=model, 

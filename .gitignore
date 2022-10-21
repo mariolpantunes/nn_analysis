@@ -130,3 +130,6 @@ dmypy.json
 
 #Remove csv files (datasets)
 *.csv
+
+# results folder
+results/
