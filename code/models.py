@@ -3,7 +3,7 @@ from tensorflow.keras.models import Sequential
 from tensorflow.keras.layers import Dense, Flatten, Conv2D, MaxPooling2D, BatchNormalization, GRU
 from scikeras.wrappers import KerasClassifier, KerasRegressor
 
-def create_dense_model(classifier):
+def create_dense_model(classification):
 
     def model(input_shape, hidden_layer_dim, n_hidden_layers, activation_function, task_activation, task_nodes):
         model = Sequential()
@@ -15,7 +15,7 @@ def create_dense_model(classifier):
         
         return model
 
-    if classifier:
+    if classification:
         return KerasClassifier(model=model, 
                             verbose=0, 
                             input_shape=(768,),
