@@ -1,9 +1,8 @@
 import pandas as pd
-import numpy as np
 
 from tensorflow.keras.datasets import cifar10, fashion_mnist
 from sklearn import datasets
-from sklearn.preprocessing import MinMaxScaler
+
 
 def load_cifar10():
     (x_train, y_train), (x_test, y_test) = cifar10.load_data()
@@ -35,26 +34,18 @@ def load_fashion_mnist():
 def load_dataset(file_location): # this needs to be changed as well as the base abalone.csv file
                                 # Change this to a standard .csv load and division into train and test
                                 # make a change in the abalone.csv to standerdize it so we only need to load, not preprocess.
-    data = pd.read_csv(file_location)
 
+    if file_location.split(".")[-1] != "csv":
+        raise ValueError("Dataset should be a csv file.")
 
-    sex = data.pop('Sex')
- 
-    data['M'] = (sex == 'M')*1.0
-    data['F'] = (sex == 'F')*1.0
-    data['I'] = (sex == 'I')*1.0
+    data = pd.read_csv(file_location, index_col=False)
 
-     
-    dataset = data[['Length', 'Diameter', 'Height', 'Whole weight', 'Shucked weight','Viscera weight','Shell weight','M','F','I','Rings']]
-    
+    train_length = int(data.shape[0]*0.8)
 
-    X = dataset.iloc[:,0:10]
-    y = dataset.iloc[:,10].values
+    x_train = data.iloc[:train_length,:data.shape[1]-1].values
+    y_train = data.iloc[:train_length, data.shape[1]-1].values
 
-    scalar= MinMaxScaler()
-    X = scalar.fit_transform(X)
-    y = y.reshape(-1,1)
-    y = scalar.fit_transform(y)
+    x_test = data.iloc[train_length: , :data.shape[1]-1].values
+    y_test = data.iloc[train_length: , data.shape[1]-1].values
 
-
-    return X, y
+    return (x_train, y_train), (x_test, y_test)

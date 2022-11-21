@@ -1,0 +1,9 @@
+{
+    "classifier__hidden_layer_dim":[10, 20, 30],
+    "classifier__input_shape":[[10]],
+    "classifier__epochs":[10],
+    "classifier__optimizer":["adam"],
+    "classifier__loss":["mean_squared_error"],
+    "classifier__task_activation":["linear"],
+    "classifier__task_nodes":[1]
+}

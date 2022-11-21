@@ -7,6 +7,8 @@ from keras.utils import to_categorical
 import numpy as np
 from search import search
 from metrics import mcc
+from os import path
+from os import mkdir
 
 parser = argparse.ArgumentParser()
 
@@ -51,36 +53,38 @@ parser.add_argument(
     dest='dataset',
     action='store',
     required=True,
-    help='Name of the dataset to be considered'
-)
-
-parser.add_argument(
-    '--datasetFile',
-    dest='datasetFile',
-    action='store',
-    required=False,
-    help='File of the dataset to be loaded'
+    help='Name or path of the dataset to be considered'
 )
 
 args = parser.parse_args()
-
-print('Creating the model')
-if args.model == "dense":
-    model = models.create_dense_model(bool(args.model_type))
-elif args.model == "cnn":
-    print("entrei")
-    model = models.create_cnn_model(bool(args.model_type))
-else:
-    model = models.create_gru_model(bool(args.model_type))
-
-print('Choosing metrics')
-if bool(args.model_type):
+'''
+    Check if is classification or regression
+'''
+classification = args.model_type == "True"
+if classification:
     scorer = mcc()
 else:
-    scorer = ""         # needs to be defined
- 
+    scorer = "neg_root_mean_squared_error"
 
-print('Loading Hyperparameter sets.')
+
+'''
+    Create default model
+'''
+if args.model == "dense":
+    model = models.create_dense_model(classification)
+elif args.model == "cnn":
+    model = models.create_cnn_model(classification)
+elif args.model == "gru":
+    model = models.create_gru_model(classification)
+else:
+    raise ValueError("Model should be either 'dense', 'cnn', or 'gru'")
+
+'''
+    Load hyperparameter sets for evaluation
+'''
+if not path.exists(args.hyper_path):
+    raise ValueError("Hyperparameter folder does not exist.")
+
 hyper_files = glob.glob(args.hyper_path+'*.json')
 hyper_set = []
 
@@ -90,16 +94,21 @@ for f in hyper_files:
     hyper_set.append(params)
     
 
+if not hyper_set:
+    raise ValueError("Hyperparameter folder is empty. \n Ensure that every hyperparameter set is a json file.")
 
-print('Loading the dataset considered')
+'''
+    Load the dataset
+'''
 if args.dataset == "cifar10":
     train_data, test_data= datasets.load_cifar10()
 
     x_train, y_train = train_data
 
-    y_train = to_categorical(y_train)
+    if classification:
+        y_train = to_categorical(y_train)
 
-    if args.model == "dense":
+    if args.model == "dense":                   # needs to be corrected for a standard preprocessing
         x_train = np.reshape(x_train[:,:,:,0], (x_train.shape[0], -1))
     elif args.model == "gru":
         x_train = x_train[:,:,:,0]
@@ -109,16 +118,30 @@ elif args.dataset == "fashion_mnist":
 
     x_train, y_train = train_data
 
-    y_train = to_categorical(y_train)
+    if classification:
+        y_train = to_categorical(y_train)
 
 else:
-    train_data, test_data= datasets.load_dataset(args.datasetFile)
+    if not path.exists(args.dataset):
+        raise ValueError("Dataset file does not exist. \n the names of the default datasets are 'cifar10', 'fashion_mnist'")
+    train_data, test_data= datasets.load_dataset(args.dataset)
 
     x_train, y_train = train_data
 
-    y_train = to_categorical(y_train)
+    if classification:
+        y_train = to_categorical(y_train)
+    
+'''
+    Results folder creation
+'''
+results_dir = "/".join(args.results_file.split("/"))
+if not path.exists(results_dir):
+    mkdir(results_dir)
 
 
+'''
+    Run search
+'''
 
 search(hyper_set, x_train, y_train, scorer, args.results_file)
 

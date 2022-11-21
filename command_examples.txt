@@ -7,3 +7,6 @@ python code/run.py --hyper hyperparameters/CIFAR10/CNN/ -m cnn -c True -o ./resu
 
 # Running gru model
 python code/run.py --hyper hyperparameters/CIFAR10/GRU/ -m gru -c True -o ./results/gru/test.csv -d cifar10
+
+# Load external dataset
+python code/run.py --hyper hyperparameters/Abalone/DENSE/ -m dense -c False -o ./results/dense/test.csv -d datasets/abalone_pre_processed.csv
