@@ -15,7 +15,7 @@ parser.add_argument(
     dest='hyper_path',
     action='store',
     required=True,
-    help='Folder with multiple hyperparameter sets'
+    help='Folder with multiple hyperparameter sets' 
 )
 
 parser.add_argument(
@@ -88,6 +88,7 @@ for f in hyper_files:
     params = json.load(open(f))
     params["classifier"] = [model]
     hyper_set.append(params)
+    
 
 
 print('Loading the dataset considered')
@@ -119,5 +120,5 @@ else:
 
 
 
-search(hyper_set, x_train, y_train, scorer, args.results_path)
+search(hyper_set, x_train, y_train, scorer, args.results_file)
 
