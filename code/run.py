@@ -17,7 +17,7 @@ parser.add_argument(
     dest='hyper_path',
     action='store',
     required=True,
-    help='Folder with multiple hyperparameter sets'
+    help='Folder with multiple hyperparameter sets' 
 )
 
 parser.add_argument(
@@ -92,6 +92,7 @@ for f in hyper_files:
     params = json.load(open(f))
     params["classifier"] = [model]
     hyper_set.append(params)
+    
 
 if not hyper_set:
     raise ValueError("Hyperparameter folder is empty. \n Ensure that every hyperparameter set is a json file.")
@@ -137,8 +138,10 @@ results_dir = "/".join(args.results_file.split("/"))
 if not path.exists(results_dir):
     mkdir(results_dir)
 
+
 '''
     Run search
 '''
+
 search(hyper_set, x_train, y_train, scorer, args.results_file)
 

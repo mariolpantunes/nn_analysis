@@ -41,4 +41,6 @@ def search(params, x_train, y_train, scorer, output_file):
     results['Training Time (Std)'] = np.round(grid_result.cv_results_['std_score_time'], 3)
 
     df = pd.DataFrame(results)
+
     df.to_csv(output_file)
+

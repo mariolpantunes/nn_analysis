@@ -1,4 +1,3 @@
-
 from tensorflow.keras.models import Sequential
 from tensorflow.keras.layers import Dense, Flatten, Conv2D, MaxPooling2D, BatchNormalization, GRU
 from scikeras.wrappers import KerasClassifier, KerasRegressor
@@ -107,7 +106,7 @@ def create_gru_model(classifier):
                             input_shape=(10,10),
                             hidden_layer_dim=10,
                             n_hidden_layers = 1,
-                            activation_function = "relu",
+                            activation_function = "tanh",
                             task_activation = 'softmax',
                             task_nodes = 1,
                             loss= "categorical_crossentropy"
@@ -118,7 +117,7 @@ def create_gru_model(classifier):
                             input_shape=(10,10),
                             hidden_layer_dim=10,
                             n_hidden_layers = 1,
-                            activation_function = "relu",
+                            activation_function = "tanh",
                             task_activation = 'linear',
                             task_nodes = 1
                             )
