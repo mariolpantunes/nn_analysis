@@ -1,0 +1,28 @@
+Métrica Regressão:
+-----------------
+
+RMSE - 	https://www.enjoyalgorithms.com/blog/evaluation-metrics-regression-models	-	https://apple.github.io/turicreate/docs/userguide/evaluation/regression.html	-	https://medium.com/analytics-vidhya/evaluation-metrics-for-regression-models-c91c65d73af	-	https://stephenallwright.com/rmse-vs-mae/	-	https://www.statology.org/mse-vs-rmse/
+
+
+
+MSE - Mean Squared Error - https://towardsdatascience.com/20-popular-machine-learning-metrics-part-1-classification-regression-evaluation-metrics-1ca3e282a2ce	-	https://towardsdatascience.com/20-popular-machine-learning-metrics-part-1-classification-regression-evaluation-metrics-1ca3e282a2ce		(most used)
+	-	https://www.analyticsvidhya.com/blog/2021/05/know-the-best-evaluation-metrics-for-your-regression-model/	-	https://www.enjoyalgorithms.com/blog/evaluation-metrics-regression-models	-	https://blogs.oracle.com/machinelearning/post/metrics-for-regression-using-oml4py
+	
+
+	-	
+
+
+MAE - 	https://www.enjoyalgorithms.com/blog/evaluation-metrics-regressio-models	
+
+
+
+RMSE -> Mais escolhida que o MAE e  MSE.
+
+
+RMSE mais escolhido do que MAE porque penaliza outliers 
+RMSE mais escolhido do que MSE porque 
+
+
+	
+
+
