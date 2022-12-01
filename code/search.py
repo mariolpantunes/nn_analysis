@@ -11,7 +11,7 @@ def search(params, x_train, y_train, scorer, output_file):
 
     pipeline = Pipeline([('classifier', params[0]['classifier'])])
 
-    grid = GridSearchCV(pipeline, params, n_jobs=1, cv=3, scoring=scorer, verbose=3)
+    grid = GridSearchCV(pipeline, params, n_jobs=1, cv=5, scoring=scorer, verbose=3)
 
     grid_result = grid.fit(x_train, y_train)
 
