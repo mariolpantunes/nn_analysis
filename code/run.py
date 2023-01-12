@@ -1,16 +1,43 @@
 import argparse
 import glob
 import json
+from os import mkdir, path
+
 import models
-import datasets
-from keras.utils import to_categorical
 import numpy as np
-from search import search
+from keras.utils import to_categorical
 from metrics import mcc
-from os import path
-from os import mkdir
+from search import search
+
+import datasets
 
 parser = argparse.ArgumentParser()
+
+#parser.add_argument(
+#    '-m',
+#    '--model',
+#    dest='model',
+#    action='store',
+#    required=True,
+#    help='Type of model considered'
+#)
+#parser.add_argument(
+#    '-c',
+#    '--classification',
+#    dest='model_type',
+#    action='store',
+#    required=True,
+#    help='True if classification false if regression'
+#)
+#parser.add_argument(
+#    '--dataset',
+#    '-d',
+#    dest='dataset',
+#    action='store',
+#    required=True,
+#    help='Name or path of the dataset to be considered'
+#)
+
 
 parser.add_argument(
     '--hyper',
@@ -18,24 +45,6 @@ parser.add_argument(
     action='store',
     required=True,
     help='Folder with multiple hyperparameter sets' 
-)
-
-parser.add_argument(
-    '-m',
-    '--model',
-    dest='model',
-    action='store',
-    required=True,
-    help='Type of model considered'
-)
-
-parser.add_argument(
-    '-c',
-    '--classification',
-    dest='model_type',
-    action='store',
-    required=True,
-    help='True if classification false if regression'
 )
 
 parser.add_argument(
@@ -47,16 +56,26 @@ parser.add_argument(
     help='Path to the file where the results are stored (.csv file)'
 )
 
-parser.add_argument(
-    '--dataset',
-    '-d',
-    dest='dataset',
-    action='store',
-    required=True,
-    help='Name or path of the dataset to be considered'
-)
-
 args = parser.parse_args()
+
+'''
+    Load hyperparameter sets for evaluation
+'''
+if not path.exists(args.hyper_path):
+    raise ValueError("Hyperparameter folder does not exist.")
+
+hyper_files = glob.glob(args.hyper_path+'*.json')
+hyper_set = []
+
+for f in hyper_files:
+    params = json.load(open(f))
+    params["classifier"] = [model]
+    hyper_set.append(params)
+    
+if not hyper_set:
+    raise ValueError("Hyperparameter folder is empty. \n Ensure that every hyperparameter set is a json file.")
+
+
 '''
     Check if is classification or regression
 '''
@@ -79,23 +98,6 @@ elif args.model == "gru":
 else:
     raise ValueError("Model should be either 'dense', 'cnn', or 'gru'")
 
-'''
-    Load hyperparameter sets for evaluation
-'''
-if not path.exists(args.hyper_path):
-    raise ValueError("Hyperparameter folder does not exist.")
-
-hyper_files = glob.glob(args.hyper_path+'*.json')
-hyper_set = []
-
-for f in hyper_files:
-    params = json.load(open(f))
-    params["classifier"] = [model]
-    hyper_set.append(params)
-    
-
-if not hyper_set:
-    raise ValueError("Hyperparameter folder is empty. \n Ensure that every hyperparameter set is a json file.")
 
 '''
     Load the dataset
