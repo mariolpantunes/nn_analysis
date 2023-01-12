@@ -1,17 +1,16 @@
 
+import numpy as np
+import pandas as pd
 from sklearn.model_selection import GridSearchCV
-
 from sklearn.pipeline import Pipeline
 
-import pandas as pd
-import numpy as np
 
-def search(params, x_train, y_train, scorer, output_file):
+def search(params, x_train, y_train, scorer, output_file, dataset_name):
     results = {}
 
     pipeline = Pipeline([('classifier', params[0]['classifier'])])
 
-    grid = GridSearchCV(pipeline, params, n_jobs=1, cv=5, scoring=scorer, verbose=3)
+    grid = GridSearchCV(pipeline, params, n_jobs=1, cv=5, scoring=scorer, verbose=50)
 
     grid_result = grid.fit(x_train, y_train)
 
@@ -39,6 +38,7 @@ def search(params, x_train, y_train, scorer, output_file):
     results['Training Time (Std)'] = np.round(grid_result.cv_results_['std_fit_time'], 3)
     results['Prediction Time (Avg)'] = np.round(grid_result.cv_results_['mean_score_time'], 3)
     results['Training Time (Std)'] = np.round(grid_result.cv_results_['std_score_time'], 3)
+    results['dataset'] = dataset_name
 
     df = pd.DataFrame(results)
 

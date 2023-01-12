@@ -1,7 +1,6 @@
 import pandas as pd
-
-from tensorflow.keras.datasets import cifar10, fashion_mnist
 from sklearn import datasets
+from tensorflow.keras.datasets import cifar10, fashion_mnist
 
 
 def load_cifar10():
@@ -32,8 +31,8 @@ def load_fashion_mnist():
 
 
 def load_dataset(file_location): # this needs to be changed as well as the base abalone.csv file
-                                # Change this to a standard .csv load and division into train and test
-                                # make a change in the abalone.csv to standerdize it so we only need to load, not preprocess.
+                                 # Change this to a standard .csv load and division into train and test
+                                 # make a change in the abalone.csv to standerdize it so we only need to load, not preprocess.
 
     if file_location.split(".")[-1] != "csv":
         raise ValueError("Dataset should be a csv file.")

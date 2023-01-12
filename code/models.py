@@ -1,14 +1,18 @@
-from tensorflow.keras.models import Sequential
-from tensorflow.keras.layers import Dense, Flatten, Conv2D, MaxPooling2D, BatchNormalization, GRU
 from scikeras.wrappers import KerasClassifier, KerasRegressor
+from tensorflow.keras.layers import (GRU, LSTM, BatchNormalization, Conv2D,
+                                     Dense, Flatten, MaxPooling2D)
+from tensorflow.keras.models import Sequential
+
 
 def create_dense_model(classification):
 
-    def model(input_shape, hidden_layer_dim, n_hidden_layers, activation_function, task_activation, task_nodes):
+    def model(input_shape, hidden_layer_dims, activation_functions, task_activation, task_nodes):
         model = Sequential()
-        model.add(Dense(units=hidden_layer_dim, input_shape=input_shape, activation=activation_function))
-        for i in range(n_hidden_layers -1):
-            model.add(Dense(units=hidden_layer_dim, activation=activation_function))
+
+        model.add(Dense(units=hidden_layer_dims[0], input_shape=input_shape, activation=activation_functions[0]))
+        
+        for i in range(1, len(hidden_layer_dims)):
+            model.add(Dense(units=hidden_layer_dims[i], activation=activation_functions[i]))
         
         model.add(Dense(units=task_nodes,activation=task_activation))
         
@@ -18,9 +22,8 @@ def create_dense_model(classification):
         return KerasClassifier(model=model, 
                             verbose=0, 
                             input_shape=(768,),
-                            hidden_layer_dim=10,
-                            n_hidden_layers = 1,
-                            activation_function = 'relu',
+                            hidden_layer_dim=[100],
+                            activation_functions = ['relu'],
                             task_activation = 'softmax',
                             task_nodes = 1,
                             optimizer='adam',
@@ -30,9 +33,8 @@ def create_dense_model(classification):
     return KerasRegressor(model=model, 
                             verbose=0, 
                             input_shape=(768,),
-                            hidden_layer_dim=10,
-                            n_hidden_layers = 1,
-                            activation_function = 'relu',
+                            hidden_layer_dims=[100],
+                            activation_functions = ['relu'],
                             task_activation = 'linear',
                             task_nodes = 1,
                             optimizer='adam',
@@ -42,19 +44,21 @@ def create_dense_model(classification):
 
 def create_cnn_model(classifier):
 
-    def model(input_shape, n_kernels, kernel_size, pool_size, activation_function, n_hidden_layers, task_activation, task_nodes):
+    def model(input_shape, n_kernels, kernel_sizes, pool_sizes, activation_functions, dense_sizes, dense_activations, task_activation, task_nodes):
         model = Sequential()
-        model.add(Conv2D(n_kernels, kernel_size=kernel_size, activation=activation_function, input_shape=input_shape))
-        model.add(MaxPooling2D(pool_size=pool_size))
+        model.add(Conv2D(n_kernels[0], kernel_size=kernel_sizes[0], activation=activation_functions[0], input_shape=input_shape))
+        model.add(MaxPooling2D(pool_size=pool_sizes[0]))
         model.add(BatchNormalization())
-        for i in range(n_hidden_layers-1):
-            model.add(Conv2D(n_kernels, kernel_size=kernel_size, activation=activation_function))
-            model.add(MaxPooling2D(pool_size=pool_size))
+
+        for i in range(1, len(kernel_sizes)):
+            model.add(Conv2D(n_kernels[i], kernel_size=kernel_sizes[i], activation=activation_functions[i]))
+            model.add(MaxPooling2D(pool_size=pool_sizes[i]))
             model.add(BatchNormalization())
 
         model.add(Flatten())
-        model.add(Dense(256, activation=activation_function))
-        model.add(Dense(128, activation=activation_function))
+        for i in range(len(dense_sizes)):
+            model.add(Dense(dense_sizes[i], activation=dense_activations[i]))
+
         model.add(Dense(task_nodes, activation=task_activation))
 
         return model
@@ -63,11 +67,12 @@ def create_cnn_model(classifier):
         return KerasClassifier(model=model, 
                             verbose=0, 
                             input_shape=(32,32,),
-                            n_kernels=32,
-                            kernel_size=(3,3),
-                            pool_size = 2,
-                            n_hidden_layers = 1,
-                            activation_function = "relu",
+                            n_kernels=[32],
+                            kernel_sizes=[(3,3)],
+                            pool_sizes = [2],
+                            activation_functions = ["relu"],
+                            dense_sizes = [100],
+                            dense_activations = ["relu"],
                             task_activation = "softmax",
                             task_nodes = 1
                             )
@@ -75,27 +80,33 @@ def create_cnn_model(classifier):
     return KerasRegressor(model=model, 
                             verbose=0, 
                             input_shape=(32,32,),
-                            n_kernels=32,
-                            kernel_size=(3,3),
-                            pool_size = 2,
-                            n_hidden_layers = 1,
-                            activation_function = "relu",
+                            n_kernels=[32],
+                            kernel_sizes=[(3,3)],
+                            pool_sizes = [2],
+                            activation_functions = ["relu"],
+                            dense_sizes = [100],
+                            dense_activations = ["relu"],
                             task_activation = "linear",
                             task_nodes = 1
                             )
 
-def create_gru_model(classifier):
+def create_rnn_model(classifier):
 
-    def model(input_shape, hidden_layer_dim, n_hidden_layers, activation_function, task_activation, task_nodes):
+    def model(input_shape, rnn_node, hidden_layer_dims, activation_functions, dense_sizes, dense_activations, task_activation, task_nodes):
 
-        return_sequences = True if n_hidden_layers > 1 else False
+        return_sequences = True if len(hidden_layer_dims) > 1 else False
 
         model = Sequential()
-        model.add(GRU(units=hidden_layer_dim, input_shape=input_shape, activation=activation_function))
-        for i in range(n_hidden_layers -1):
-            model.add(GRU(units=hidden_layer_dim, activation=activation_function, return_sequences=return_sequences))
-            return_sequences = True if n_hidden_layers > 1 else False
+        rnn_node = GRU if rnn_node == "GRU" else LSTM
+        model.add(rnn_node(units=hidden_layer_dims[0], input_shape=input_shape, activation=activation_functions[0]))
+
+        for i in range(1, len(hidden_layer_dims)):
+            model.add(rnn_node(units=hidden_layer_dims[i], activation=activation_functions[i], return_sequences=return_sequences))
+            return_sequences = True if i < len(hidden_layer_dims) - 2 else False
         
+        for i in range(len(dense_sizes)):
+            model.add(Dense(units=dense_sizes[i],activation=dense_activations[i]))
+
         model.add(Dense(units=task_nodes,activation=task_activation))
 
         return model
@@ -104,20 +115,23 @@ def create_gru_model(classifier):
         return KerasClassifier(model=model, 
                             verbose=0, 
                             input_shape=(10,10),
-                            hidden_layer_dim=10,
-                            n_hidden_layers = 1,
-                            activation_function = "tanh",
+                            rnn_node="GRU",
+                            hidden_layer_dims=[10],
+                            activation_functions = ["tanh"],
+                            dense_sizes = [100],
+                            dense_activations = ["relu"],
                             task_activation = 'softmax',
-                            task_nodes = 1,
-                            loss= "categorical_crossentropy"
+                            task_nodes = 1
                             )
 
     return KerasRegressor(model=model, 
                             verbose=0, 
                             input_shape=(10,10),
-                            hidden_layer_dim=10,
-                            n_hidden_layers = 1,
-                            activation_function = "tanh",
+                            rnn_node="GRU",
+                            hidden_layer_dims=[10],
+                            activation_functions = ["tanh"],
+                            dense_sizes = [100],
+                            dense_activations = ["relu"],
                             task_activation = 'linear',
                             task_nodes = 1
                             )

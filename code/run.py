@@ -11,6 +11,28 @@ from search import search
 
 import datasets
 
+
+def get_model(model_name, is_categorical):
+    '''
+    Create default model
+    '''
+    if model_name == "dense":
+        return models.create_dense_model(is_categorical)
+    elif model_name == "cnn":
+        return models.create_cnn_model(is_categorical)
+    elif model_name == "rnn":
+        return models.create_rnn_model(is_categorical)
+    
+    raise ValueError("Model should be either 'dense', 'cnn', or 'gru'")
+
+def get_scorer(is_categorical):
+
+    return 
+    if is_categorical:
+         mcc()
+    else:
+        scorer = "neg_root_mean_squared_error"
+
 parser = argparse.ArgumentParser()
 
 #parser.add_argument(
@@ -37,7 +59,14 @@ parser = argparse.ArgumentParser()
 #    required=True,
 #    help='Name or path of the dataset to be considered'
 #)
-
+#parser.add_argument(
+#    '--outputFile',
+#    '-o',
+#    dest='results_file',
+#    action='store',
+#    required=True,
+#    help='Path to the file where the results are stored (.csv file)'
+#)
 
 parser.add_argument(
     '--hyper',
@@ -45,15 +74,6 @@ parser.add_argument(
     action='store',
     required=True,
     help='Folder with multiple hyperparameter sets' 
-)
-
-parser.add_argument(
-    '--outputFile',
-    '-o',
-    dest='results_file',
-    action='store',
-    required=True,
-    help='Path to the file where the results are stored (.csv file)'
 )
 
 args = parser.parse_args()
@@ -65,85 +85,68 @@ if not path.exists(args.hyper_path):
     raise ValueError("Hyperparameter folder does not exist.")
 
 hyper_files = glob.glob(args.hyper_path+'*.json')
-hyper_set = []
+
+if not hyper_files:
+    raise ValueError("Hyperparameter folder is empty. \n Ensure that every hyperparameter set is a json file.")
+
+jobs = {} #gets a set of models to run for each dataset
 
 for f in hyper_files:
     params = json.load(open(f))
-    params["classifier"] = [model]
-    hyper_set.append(params)
-    
-if not hyper_set:
-    raise ValueError("Hyperparameter folder is empty. \n Ensure that every hyperparameter set is a json file.")
+    dataset = params["dataset"]
+    if dataset in jobs:
+
+        params["classifier"] = [get_model(params["model"], params["is_categorical"])]
+
+        del params["dataset"]
+        del params["is_categorical"]
+        del params["model"]
+
+        jobs[dataset]["hyper_set"].append(params) 
+
+    else:
+
+        params["classifier"] = [get_model(params["model"], params["is_categorical"])]
+        scorer = mcc() if params["is_categorical"] else "neg_root_mean_squared_error"
+        output = params["output"]
+
+        del params["dataset"]
+        del params["is_categorical"]
+        del params["model"]
+        del params["output"]
+
+
+        jobs[dataset] = {"hyper_set" : [params], "scorer" : scorer, "output" : output}
 
 
 '''
-    Check if is classification or regression
+    Load the dataset and run experiment
 '''
-classification = args.model_type == "True"
-if classification:
-    scorer = mcc()
-else:
-    scorer = "neg_root_mean_squared_error"
+for dataset in jobs:
 
-
-'''
-    Create default model
-'''
-if args.model == "dense":
-    model = models.create_dense_model(classification)
-elif args.model == "cnn":
-    model = models.create_cnn_model(classification)
-elif args.model == "gru":
-    model = models.create_gru_model(classification)
-else:
-    raise ValueError("Model should be either 'dense', 'cnn', or 'gru'")
-
-
-'''
-    Load the dataset
-'''
-if args.dataset == "cifar10":
-    train_data, test_data= datasets.load_cifar10()
+    if dataset == "CIFAR10":
+        train_data, test_data = datasets.load_cifar10()
+    else:
+        if not path.exists(dataset):
+            raise ValueError("Dataset file does not exist.")
+        train_data, test_data= datasets.load_dataset(dataset)
 
     x_train, y_train = train_data
+    #x_train = x_train[:,:,:,0]
 
-    if classification:
-        y_train = to_categorical(y_train)
 
-    if args.model == "dense":                   # needs to be corrected for a standard preprocessing
-        x_train = np.reshape(x_train[:,:,:,0], (x_train.shape[0], -1))
-    elif args.model == "gru":
-        x_train = x_train[:,:,:,0]
-        
-elif args.dataset == "fashion_mnist":
-    train_data, test_data= datasets.load_fashion_mnist()
-
-    x_train, y_train = train_data
-
-    if classification:
-        y_train = to_categorical(y_train)
-
-else:
-    if not path.exists(args.dataset):
-        raise ValueError("Dataset file does not exist. \n the names of the default datasets are 'cifar10', 'fashion_mnist'")
-    train_data, test_data= datasets.load_dataset(args.dataset)
-
-    x_train, y_train = train_data
-
-    if classification:
+    if str(jobs[dataset]["scorer"]) == "make_scorer(mcc)" :
         y_train = to_categorical(y_train)
     
-'''
-    Results folder creation
-'''
-results_dir = "/".join(args.results_file.split("/"))
-if not path.exists(results_dir):
-    mkdir(results_dir)
+    '''
+        Results folder creation
+    '''
+    results_dir = "/".join(jobs[dataset]["output"].split("/")[:-1])
+    if not path.exists(results_dir):
+        mkdir(results_dir)
 
-
-'''
-    Run search
-'''
-
-search(hyper_set, x_train, y_train, scorer, args.results_file)
+    '''
+        Run search
+    '''
+    search(jobs[dataset]["hyper_set"], x_train, y_train, scorer, jobs[dataset]["output"], dataset)
 
