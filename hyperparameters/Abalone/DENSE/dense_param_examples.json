@@ -5,5 +5,7 @@
     "classifier__optimizer":["adam"],
     "classifier__loss":["mean_squared_error"],
     "classifier__task_activation":["linear"],
-    "classifier__task_nodes":[1]
+    "classifier__task_nodes":[1],
+    "model":"dense",
+    "task":"True"
 }

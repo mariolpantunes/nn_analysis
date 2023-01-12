@@ -21,24 +21,6 @@ parser.add_argument(
 )
 
 parser.add_argument(
-    '-m',
-    '--model',
-    dest='model',
-    action='store',
-    required=True,
-    help='Type of model considered'
-)
-
-parser.add_argument(
-    '-c',
-    '--classification',
-    dest='model_type',
-    action='store',
-    required=True,
-    help='True if classification false if regression'
-)
-
-parser.add_argument(
     '--outputFile',
     '-o',
     dest='results_file',
@@ -57,10 +39,28 @@ parser.add_argument(
 )
 
 args = parser.parse_args()
+
+
+'''
+    Load hyperparameter sets for evaluation pt1
+'''
+
+hyper_files = glob.glob(args.hyper_path+'*.json')
+
+if not path.exists(args.hyper_path):
+    raise ValueError("Hyperparameter folder does not exist.")
+
+for f in  hyper_files:
+    params = json.load(open(f))
+    model_chosen = params["model"]
+    task_chosen = params["task"]
+    del params["model"]
+    del params["task"]
+
 '''
     Check if is classification or regression
 '''
-classification = args.model_type == "True"
+classification = task_chosen == "True"
 if classification:
     scorer = mcc()
 else:
@@ -70,32 +70,28 @@ else:
 '''
     Create default model
 '''
-if args.model == "dense":
+if model_chosen == "dense":
     model = models.create_dense_model(classification)
-elif args.model == "cnn":
+elif model_chosen == "cnn":
     model = models.create_cnn_model(classification)
-elif args.model == "gru":
+elif model_chosen == "gru":
     model = models.create_gru_model(classification)
 else:
     raise ValueError("Model should be either 'dense', 'cnn', or 'gru'")
 
 '''
-    Load hyperparameter sets for evaluation
+    Load hyperparameter sets for evaluation pt2
 '''
-if not path.exists(args.hyper_path):
-    raise ValueError("Hyperparameter folder does not exist.")
-
-hyper_files = glob.glob(args.hyper_path+'*.json')
 hyper_set = []
 
 for f in hyper_files:
-    params = json.load(open(f))
     params["classifier"] = [model]
     hyper_set.append(params)
     
 
 if not hyper_set:
-    raise ValueError("Hyperparameter folder is empty. \n Ensure that every hyperparameter set is a json file.")
+    raise ValueError("Hyperparameter folder is empty. \n Ensure that every hyperparameter set is a json file.",model_chosen)
+    
 
 '''
     Load the dataset
@@ -108,9 +104,9 @@ if args.dataset == "cifar10":
     if classification:
         y_train = to_categorical(y_train)
 
-    if args.model == "dense":                   # needs to be corrected for a standard preprocessing
+    if model_chosen == "dense":                   # needs to be corrected for a standard preprocessing
         x_train = np.reshape(x_train[:,:,:,0], (x_train.shape[0], -1))
-    elif args.model == "gru":
+    elif model_chosen == "gru":
         x_train = x_train[:,:,:,0]
         
 elif args.dataset == "fashion_mnist":

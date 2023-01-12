@@ -1,12 +1,12 @@
 
 # Running dense model
-python code/run.py --hyper hyperparameters/CIFAR10/DENSE/ -m dense -c True -o ./results/dense/test.csv -d cifar10
+python code/run.py --hyper hyperparameters/CIFAR10/DENSE/ -o ./results/dense/test.csv -d cifar10
 
 # Running cnn model
-python code/run.py --hyper hyperparameters/CIFAR10/CNN/ -m cnn -c True -o ./results/cnn/test.csv -d cifar10
+python code/run.py --hyper hyperparameters/CIFAR10/CNN/ -o ./results/cnn/test.csv -d cifar10
 
 # Running gru model
-python code/run.py --hyper hyperparameters/CIFAR10/GRU/ -m gru -c True -o ./results/gru/test.csv -d cifar10
+python code/run.py --hyper hyperparameters/CIFAR10/GRU/ -o ./results/gru/test.csv -d cifar10
 
 # Load external dataset
-python code/run.py --hyper hyperparameters/Abalone/DENSE/ -m dense -c False -o ./results/dense/test.csv -d datasets/abalone_pre_processed.csv
+python code/run.py --hyper hyperparameters/Abalone/DENSE/ -o ./results/dense/test.csv -d datasets/abalone_pre_processed.csv
