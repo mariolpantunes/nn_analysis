@@ -5,5 +5,8 @@
     "classifier__optimizer":["adam"],
     "classifier__loss":["mean_squared_error"],
     "classifier__task_activation":["linear"],
-    "classifier__task_nodes":[1]
+    "classifier__task_nodes":[1],
+    "model" : "DENSE",
+    "classification" : true,
+    "dataset" : "datasets/abalone_pre_processed.csv"
 }
