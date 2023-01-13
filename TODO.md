@@ -4,7 +4,6 @@
     - CNN/RNN/Dense can have dropouts
 
 # For search (hyperparameters folder)
-- predefine a number of random seeds to apply
 - verify callbacks to save momentaneous research
 
 # In datasets

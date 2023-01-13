@@ -1,6 +1,6 @@
 {
     "classifier__input_shape":[[10]],
-    "classifier__hidden_layer_dims":[[10, 20, 30]],
+    "classifier__hidden_layer_dims":[[100, 50, 30]],
     "classifier__activation_functions":[["relu", "relu", "relu"]],
     "classifier__task_activation":["linear"],
     "classifier__task_nodes":[1],

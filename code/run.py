@@ -5,12 +5,14 @@ from os import mkdir, path
 
 import models
 import numpy as np
+import tensorflow as tf
 from keras.utils import to_categorical
 from metrics import mcc
 from search import search
 
 import datasets
 
+tf.keras.utils.set_random_seed(1)
 
 def get_model(model_name, is_categorical):
     '''
@@ -94,6 +96,8 @@ jobs = {} #gets a set of models to run for each dataset
 for f in hyper_files:
     params = json.load(open(f))
     dataset = params["dataset"]
+    #params["classifier_random_state"] = something
+
     if dataset in jobs:
 
         params["classifier"] = [get_model(params["model"], params["is_categorical"])]
