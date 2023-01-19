@@ -105,6 +105,7 @@ for f in hyper_files:
         del params["dataset"]
         del params["is_categorical"]
         del params["model"]
+        del params["output"]
 
         jobs[dataset]["hyper_set"].append(params) 
 

@@ -4,7 +4,7 @@
     - CNN/RNN/Dense can have dropouts
 
 # For search (hyperparameters folder)
-- verify callbacks to save momentaneous research
+- verify callbacks to save momentaneous research (gridsearch não suporta callbacks, save por cada dataset)
 
 # In datasets
 - Define the pool of datasets used.
