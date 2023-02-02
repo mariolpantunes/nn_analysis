@@ -2,7 +2,8 @@
 # For search (hyperparameters folder)
 - Define the sets of hyperparameters for each model/dataset.
 
-# In run, place automatically the input shape.
+# In run
+- Place automatically the input shape.
 
 # In datasets
 - Define the pool of datasets used.

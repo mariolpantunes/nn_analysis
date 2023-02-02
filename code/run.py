@@ -215,7 +215,7 @@ for dataset in jobs:
         train_data, test_data= datasets.load_dataset(dataset)
 
     x_train, y_train = train_data
-    x_train = x_train[:,:,:,0]
+    #x_train = x_train[:,:,:,0]
 
 
     if str(jobs[dataset]["scorer"]) == "make_scorer(mcc)" :
@@ -231,6 +231,5 @@ for dataset in jobs:
     '''
         Run search
     '''
-    print(jobs[dataset]["output"])
     search(jobs[dataset]["hyper_set"], x_train, y_train, scorer, jobs[dataset]["output"], dataset)
 

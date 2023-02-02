@@ -1,10 +1,10 @@
 {
 "classifier__input_shape" :[[32,32]],
 "classifier__rnn_node": ["GRU"],
-"classifier__hidden_layer_dims":[[10]],
+"classifier__hidden_layer_dims":[[5]],
 "classifier__activation_functions": [["tanh"]],
 "classifier__dropouts": [[0]],
-"classifier__dense_sizes" : [[50]],
+"classifier__dense_sizes" : [[10]],
 "classifier__dense_activations" :[["relu"]],
 "classifier__dense_dropouts": [[0]],
 "classifier__task_activation":["softmax"],

@@ -5,10 +5,6 @@ from sklearn.model_selection import GridSearchCV
 from sklearn.pipeline import Pipeline
 
 
-def temporary_save(file):
-
-    print(file)
-
 def search(params, x_train, y_train, scorer, output_file, dataset_name):
     results = {}
     
@@ -21,21 +17,33 @@ def search(params, x_train, y_train, scorer, output_file, dataset_name):
 
     param_names = []
     for param_set in grid_result.cv_results_['params']:
-        for key in param_set:
-            if key != 'classifier':
-                param_names.append(key)
+        for key in param_set:    
+            param_names.append(key)
 
-    param_names = set(param_names)
+    param_names = list(set(param_names))
+
+    param_names = sorted(param_names)
 
     for param_name in param_names:
         values = []
         for param_set in grid_result.cv_results_['params']:
                 if param_name in param_set:
-                    values.append(param_set[param_name])
+                    if param_name != "classifier":
+                        values.append(param_set[param_name])
+                    else:
+                        if "n_kernels" in param_set[param_name].get_params():
+                            values.append("CNN")
+                        elif "rnn_node" in param_set[param_name].get_params():
+                            values.append("RNN")
+                        else:
+                            values.append("MLP")
                 else:
                     values.append(np.NaN)
 
-        results[param_name.split("__")[1]] = values
+        if param_name != "classifier":
+            results[param_name.split("__")[1]] = values
+        else: 
+            results[param_name] = values
 
     results['Performance (Avg)'] = np.round(grid_result.cv_results_['mean_test_score'],3)
     results['Performance (Std)'] = np.round(grid_result.cv_results_['std_test_score'], 3)
@@ -46,6 +54,6 @@ def search(params, x_train, y_train, scorer, output_file, dataset_name):
     results['dataset'] = dataset_name
 
     df = pd.DataFrame(results)
-    print(df)
-    df.to_csv(output_file)
+
+    df.to_csv(output_file, index=None)
 

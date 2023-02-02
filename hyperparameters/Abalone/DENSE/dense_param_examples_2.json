@@ -5,7 +5,7 @@
     "classifier__dropouts":[[0,0,0]],
     "classifier__task_activation":["linear"],
     "classifier__task_nodes":[1],
-    "classifier__epochs":[10],
+    "classifier__epochs":[1],
     "classifier__optimizer":["adam"],
     "classifier__loss":["mean_squared_error"],
     
