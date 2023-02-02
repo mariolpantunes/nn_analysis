@@ -2,8 +2,10 @@
     "classifier__input_shape":[[10]],
     "classifier__hidden_layer_dims":[[10, 20, 30]],
     "classifier__activation_functions":[["relu", "relu", "relu"]],
+    "classifier__dropouts" : [[0,0,0]],
     "classifier__task_activation":["linear"],
     "classifier__task_nodes":[1],
+
     "classifier__epochs":[10],
     "classifier__optimizer":["adam"],
     "classifier__loss":["mean_squared_error"],
@@ -11,5 +13,5 @@
     "model" : "dense",
     "is_categorical" : false,
     "dataset" : "datasets/abalone_pre_processed.csv",
-    "output" : "./results/dense/test.csv"
+    "output" : "./results/dense/dense_composed.csv"
 }

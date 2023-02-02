@@ -46,6 +46,6 @@ def search(params, x_train, y_train, scorer, output_file, dataset_name):
     results['dataset'] = dataset_name
 
     df = pd.DataFrame(results)
-
+    print(df)
     df.to_csv(output_file)
 

@@ -9,4 +9,7 @@ python code/run.py --hyper hyperparameters/CIFAR10/CNN/
 python code/run.py --hyper hyperparameters/CIFAR10/RNN/ 
 
 # Load different hyperparameters with different datasets and models
-python code/run.py --hyper hyperparameters/Abalone/DENSE/ 
+python code/run.py --hyper hyperparameters/test_different_datasets/ 
+
+# Load different hyperparameters with different models and the same dataset
+python code/run.py --hyper hyperparameters/test_same_dataset/ 

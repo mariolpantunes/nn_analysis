@@ -17,5 +17,5 @@
 "model":"rnn",
 "is_categorical" : true,
 "dataset" : "CIFAR10",
-"output" : "./results/gru/results.csv"
+"output" : "./results/gru/rnn_composed.csv"
 }

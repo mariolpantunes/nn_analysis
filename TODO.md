@@ -1,14 +1,16 @@
 
-# In models
-- update model construction
-    - CNN/RNN/Dense can have dropouts
-
 # For search (hyperparameters folder)
-- verify callbacks to save momentaneous research (gridsearch não suporta callbacks, save por cada dataset)
+- Define the sets of hyperparameters for each model/dataset.
+
+# In run, place automatically the input shape.
 
 # In datasets
 - Define the pool of datasets used.
     - Create different preprocessings for each type of model and each dataset.
+- Define grey scale method to convert 3D images
+- Define flatten method
+
+- Create a table that identifies which datasets are used for the different models.
 
 
 
