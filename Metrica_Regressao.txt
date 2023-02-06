@@ -20,7 +20,6 @@ RMSE -> Mais escolhida que o MAE e  MSE.
 
 
 RMSE mais escolhido do que MAE porque penaliza outliers 
-RMSE mais escolhido do que MSE porque 
 
 
 	

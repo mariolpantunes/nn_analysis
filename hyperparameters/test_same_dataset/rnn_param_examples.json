@@ -1,21 +1,20 @@
 {
-"classifier__input_shape" :[[32,32]],
-"classifier__rnn_node": ["GRU"],
-"classifier__hidden_layer_dims":[[5]],
-"classifier__activation_functions": [["tanh"]],
-"classifier__dropouts": [[0]],
-"classifier__dense_sizes" : [[10]],
-"classifier__dense_activations" :[["relu"]],
-"classifier__dense_dropouts": [[0]],
-"classifier__task_activation":["softmax"],
-"classifier__task_nodes":[10],
+    "classifier__rnn_node": ["GRU"],
+    "classifier__hidden_layer_dims":[[5]],
+    "classifier__activation_functions": [["tanh"]],
+    "classifier__dropouts": [[0]],
+    "classifier__dense_sizes" : [[10]],
+    "classifier__dense_activations" :[["relu"]],
+    "classifier__dense_dropouts": [[0]],
+    "classifier__task_activation":["softmax"],
+    "classifier__task_nodes":[10],
 
-"classifier__epochs":[2],
-"classifier__optimizer":["adam"],
-"classifier__loss":["categorical_crossentropy"],
+    "classifier__epochs":[2],
+    "classifier__optimizer":["adam"],
+    "classifier__loss":["categorical_crossentropy"],
 
-"model":"rnn",
-"is_categorical" : true,
-"dataset" : "CIFAR10",
-"output" : "./results/gru/rnn_composed.csv"
+    "model":"rnn",
+    "is_categorical" : true,
+    "dataset" : "CIFAR10",
+    "output" : "./results/gru/rnn_composed.csv"
 }

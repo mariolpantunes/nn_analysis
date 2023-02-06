@@ -216,7 +216,9 @@ for dataset in jobs:
 
     x_train, y_train = train_data
     #x_train = x_train[:,:,:,0]
-
+    
+    for hyper_set in jobs[dataset]["hyper_set"]:
+        hyper_set["classifier__input_shape"] = [x_train.shape[1:]]
 
     if str(jobs[dataset]["scorer"]) == "make_scorer(mcc)" :
         y_train = to_categorical(y_train)

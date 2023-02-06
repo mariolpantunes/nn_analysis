@@ -1,5 +1,4 @@
 {
-    "classifier__input_shape":[[10]],
     "classifier__hidden_layer_dims":[[100, 50, 30]],
     "classifier__activation_functions":[["relu", "relu", "relu"]],
     "classifier__dropouts":[[0.5,0.7,0]],

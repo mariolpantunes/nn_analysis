@@ -1,17 +1,16 @@
 {
-"classifier__input_shape":[[1024]],
-"classifier__hidden_layer_dims":[10, 20, 30],
-"classifier__activation_functions":[["relu", "relu", "relu"]],
-"classifier__dropouts": [[0]],
-"classifier__task_activation":["softmax"],
-"classifier__task_nodes":[10],
+    "classifier__hidden_layer_dims":[10, 20, 30],
+    "classifier__activation_functions":[["relu", "relu", "relu"]],
+    "classifier__dropouts": [[0]],
+    "classifier__task_activation":["softmax"],
+    "classifier__task_nodes":[10],
 
-"classifier__epochs":[10, 20, 30],
-"classifier__optimizer":["adam"],
-"classifier__loss":["categorical_crossentropy"],
+    "classifier__epochs":[10, 20, 30],
+    "classifier__optimizer":["adam"],
+    "classifier__loss":["categorical_crossentropy"],
 
-"model":"dense",
-"is_categorical":true,
-"dataset" : "CIFAR10",
-"output" : "./results/dense/results.csv"
+    "model":"dense",
+    "is_categorical":true,
+    "dataset" : "CIFAR10",
+    "output" : "./results/dense/results.csv"
 }
