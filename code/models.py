@@ -26,7 +26,7 @@ def create_dense_model(classification):
         return KerasClassifier(model=model, 
                             verbose=0, 
                             input_shape=(768,),
-                            hidden_layer_dim=[100],
+                            hidden_layer_dims=[100],
                             activation_functions = ['relu'],
                             dropouts = [0],
                             task_activation = 'softmax',

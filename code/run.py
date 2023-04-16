@@ -3,14 +3,11 @@ import glob
 import json
 from os import makedirs, path
 
+import dataset_loader
 import models
-import numpy as np
 import tensorflow as tf
-from keras.utils import to_categorical
 from metrics import mcc
 from search import search
-
-import datasets
 
 tf.keras.utils.set_random_seed(1)
 
@@ -207,12 +204,24 @@ for f in hyper_files:
 '''
 for dataset in jobs:
 
-    if dataset == "CIFAR10":
-        train_data, test_data = datasets.load_cifar10()
+    if dataset.lower() == "cifar10":
+        train_data, test_data = dataset_loader.load_cifar10()
+    elif dataset.lower() == "abalone":
+        train_data, test_data = dataset_loader.load_abalone()
+    elif dataset.lower() == "bike_sharing":
+        train_data, test_data = dataset_loader.load_bike_sharing()
+    elif dataset.lower() == "higgs":
+        train_data, test_data = dataset_loader.load_higgs()
+    elif dataset.lower() == "delays_zurich":
+        train_data, test_data = dataset_loader.load_delays_zurich()
+    elif dataset.lower() == "compas":
+        train_data, test_data = dataset_loader.load_compas()
+    elif dataset.lower() == "covertype":
+        train_data, test_data = dataset_loader.load_covertype()
     else:
         if not path.exists(dataset):
             raise ValueError("Dataset file does not exist.")
-        train_data, test_data= datasets.load_dataset(dataset)
+        train_data, test_data= dataset_loader.load_dataset_from_file(dataset)
 
     x_train, y_train = train_data
     #x_train = x_train[:,:,:,0]
@@ -221,7 +230,7 @@ for dataset in jobs:
         hyper_set["classifier__input_shape"] = [x_train.shape[1:]]
 
     if str(jobs[dataset]["scorer"]) == "make_scorer(mcc)" :
-        y_train = to_categorical(y_train)
+        y_train = tf.keras.utils.to_categorical(y_train)
     
     '''
         Results folder creation
