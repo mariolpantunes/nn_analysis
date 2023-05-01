@@ -1,6 +1,11 @@
 import pandas as pd
+import nltk 
 from sklearn import datasets
 from tensorflow.keras.datasets import cifar10, fashion_mnist
+from nltk.stem import PorterStemmer
+from nltk.corpus import stopwords
+from textblob import TextBlob
+from sklearn.feature_extraction.text import TfidfVectorizer
 
 from datasets import load_dataset
 
@@ -128,5 +133,62 @@ def load_bike_sharing(): #Tabular regression mixture (numerous examples, more ca
 
     x_test = dataset[train_length:,:-1]
     y_test = dataset[train_length:,-1]
+
+    return (x_train, y_train), (x_test, y_test) 
+
+
+def load_sms_spam_collection(): 
+
+    dataset = pd.read_csv('../datasets/sms_spam_collection.csv',encoding = "ISO-8859-1")
+    
+    dataset.pop("Unnamed: 2")
+    dataset.pop("Unnamed: 3")
+    dataset.pop("Unnamed: 4")
+
+    #lower case
+    dataset["v2"] = dataset["v2"].str.lower()
+    #tokenization
+    dataset["v2"] = dataset.apply(lambda x: nltk.word_tokenize(x["v2"]), axis=1)
+    #stemming 
+    stemmer = PorterStemmer()
+    dataset["v2"] = dataset["v2"].apply(lambda x: [stemmer.stem(y) for y in x])
+    #remove stop words
+    stop_words = stopwords.words("english")
+    dataset["v2"].apply(lambda x: [y for y in x if y not in stop_words])
+    #get polarity and subjectivity 
+    def get_sentiment(words):
+        blob = TextBlob(','.join(words))
+        polarity = blob.sentiment.polarity
+        subjectivity = blob.sentiment.subjectivity
+        return polarity, subjectivity
+
+    dataset[["polarity", "subjectivity"]] = dataset["v2"].apply(lambda x: pd.Series(get_sentiment(x)))
+
+    #Convert label str -> bool 
+    dataset["v1"] = dataset["v1"].replace("spam", 1)
+    dataset["v1"] = dataset["v1"].replace("ham", 0)
+
+    #TF-IDF
+    dataset["v2"] = dataset["v2"].apply(lambda x: ' '.join(x))
+
+    tfidf = TfidfVectorizer()
+
+    tfidf.fit(dataset["v2"])
+
+    tfidf_data = tfidf.transform(dataset["v2"])
+
+    #Final dataframe 
+    tfidf_df = pd.DataFrame(tfidf_data.toarray(), columns=tfidf.get_feature_names_out())
+    tfidf_df.insert(0, "v1", dataset["v1"])
+    tfidf_df.insert(1, "polarity", dataset["polarity"])
+    tfidf_df.insert(2, "subjectivity", dataset["subjectivity"])
+
+    train_length = int(tfidf_df.shape[0]*0.8)
+
+    x_train = dataset.iloc[:train_length,1:dataset.shape[1]].values
+    y_train = dataset.iloc[:train_length, 0].values
+
+    x_test = dataset.iloc[train_length: , 1:dataset.shape[1]].values
+    y_test = dataset.iloc[train_length: , 0].values
 
     return (x_train, y_train), (x_test, y_test) 
