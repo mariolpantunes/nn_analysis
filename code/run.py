@@ -6,7 +6,7 @@ from os import makedirs, path
 import dataset_loader
 import models
 import tensorflow as tf
-from metrics import mcc
+from metrics import mcc, mse
 from search import search
 
 tf.keras.utils.set_random_seed(1)
@@ -186,7 +186,7 @@ for f in hyper_files:
     else:
 
         params["classifier"] = [get_model(params["model"], params["is_categorical"])]
-        scorer = mcc() if params["is_categorical"] else "neg_root_mean_squared_error"
+        scorer = mcc() if params["is_categorical"] else mse()
         output = params["output"]
 
         check_hyperparameters(params, f)

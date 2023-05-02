@@ -1,0 +1,23 @@
+{
+    "classifier__dimension": [1],
+    "classifier__n_kernels": [[32,32]],
+    "classifier__kernel_sizes" : [ [[3],[3]] ],
+    "classifier__pool_sizes" : [[2,2]],
+    "classifier__activation_functions": [["relu","relu"]],
+    "classifier__dropouts": [[0, 0]],
+    "classifier__dense_sizes" : [[128]],
+    "classifier__dense_activations" :[["relu"]],
+    "classifier__dense_dropouts": [[0]],
+    "classifier__task_activation":["sigmoid"],
+    "classifier__task_nodes":[1],
+
+    "classifier__epochs":[10],
+    "classifier__optimizer":["adam"],
+    "classifier__loss":["binary_crossentropy"],
+
+    "model":"cnn",
+    "is_categorical":false,
+    "dataset" : "sms_spam_collection",
+    "output" : "./results/sms_spam_collection/results.csv"
+}
+
