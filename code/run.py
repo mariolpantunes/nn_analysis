@@ -186,7 +186,7 @@ for f in hyper_files:
     else:
 
         params["classifier"] = [get_model(params["model"], params["is_categorical"])]
-        scorer = mcc() if params["is_categorical"] else mse()
+        scorer = mcc() if params["is_categorical"] else "neg_root_mean_squared_error"
         output = params["output"]
 
         check_hyperparameters(params, f)
@@ -218,6 +218,8 @@ for dataset in jobs:
         train_data, test_data = dataset_loader.load_compas()
     elif dataset.lower() == "covertype":
         train_data, test_data = dataset_loader.load_covertype()
+    elif dataset.lower() == "sms_spam_collection":
+        train_data, test_data = dataset_loader.load_sms_spam_collection()
     else:
         if not path.exists(dataset):
             raise ValueError("Dataset file does not exist.")
