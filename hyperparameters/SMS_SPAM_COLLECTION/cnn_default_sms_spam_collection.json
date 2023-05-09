@@ -1,7 +1,7 @@
 {
     "classifier__dimension": [1],
     "classifier__n_kernels": [[32,32]],
-    "classifier__kernel_sizes" : [ [[3,3]] ],
+    "classifier__kernel_sizes" : [ [[3,3], [3,3]] ],
     "classifier__pool_sizes" : [[2,2]],
     "classifier__activation_functions": [["relu","relu"]],
     "classifier__dropouts": [[0]],

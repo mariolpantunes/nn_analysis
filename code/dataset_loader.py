@@ -1,11 +1,11 @@
+import nltk
 import pandas as pd
-import nltk 
-from sklearn import datasets
-from tensorflow.keras.datasets import cifar10, fashion_mnist
-from nltk.stem import PorterStemmer
 from nltk.corpus import stopwords
-from textblob import TextBlob
+from nltk.stem import PorterStemmer
+from sklearn import datasets
 from sklearn.feature_extraction.text import TfidfVectorizer
+from tensorflow.keras.datasets import cifar10, fashion_mnist
+from textblob import TextBlob
 
 from datasets import load_dataset
 
