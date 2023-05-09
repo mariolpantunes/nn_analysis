@@ -32,7 +32,7 @@ def create_dense_model(classification):
                             task_activation = 'softmax',
                             task_nodes = 1,
                             optimizer='adam',
-                            loss='mean_squared_error'
+                            loss='categorical_crossentropy'
                             )
 
     return KerasRegressor(model=model, 

@@ -6,7 +6,7 @@ from os import makedirs, path
 import dataset_loader
 import models
 import tensorflow as tf
-from metrics import mcc
+from metrics import mcc, mse
 from search import search
 
 tf.keras.utils.set_random_seed(1)
@@ -218,6 +218,8 @@ for dataset in jobs:
         train_data, test_data = dataset_loader.load_compas()
     elif dataset.lower() == "covertype":
         train_data, test_data = dataset_loader.load_covertype()
+    elif dataset.lower() == "sms_spam_collection":
+        train_data, test_data = dataset_loader.load_sms_spam_collection()
     else:
         if not path.exists(dataset):
             raise ValueError("Dataset file does not exist.")

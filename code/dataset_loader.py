@@ -139,11 +139,7 @@ def load_bike_sharing(): #Tabular regression mixture (numerous examples, more ca
 
 def load_sms_spam_collection(): 
 
-    dataset = pd.read_csv('../datasets/sms_spam_collection.csv',encoding = "ISO-8859-1")
-    
-    dataset.pop("Unnamed: 2")
-    dataset.pop("Unnamed: 3")
-    dataset.pop("Unnamed: 4")
+    dataset = pd.read_csv("..\\nn_analysis\\datasets\\SMSSpamCollection", sep='\t', header=None, names=["v1", "v2"])
 
     #lower case
     dataset["v2"] = dataset["v2"].str.lower()
@@ -185,10 +181,10 @@ def load_sms_spam_collection():
 
     train_length = int(tfidf_df.shape[0]*0.8)
 
-    x_train = dataset.iloc[:train_length,1:dataset.shape[1]].values
-    y_train = dataset.iloc[:train_length, 0].values
+    x_train = tfidf_df.iloc[:train_length,1:tfidf_df.shape[1]].values
+    y_train = tfidf_df.iloc[:train_length, 0].values
 
-    x_test = dataset.iloc[train_length: , 1:dataset.shape[1]].values
-    y_test = dataset.iloc[train_length: , 0].values
+    x_test = tfidf_df.iloc[train_length: , 1:tfidf_df.shape[1]].values
+    y_test = tfidf_df.iloc[train_length: , 0].values
 
     return (x_train, y_train), (x_test, y_test) 

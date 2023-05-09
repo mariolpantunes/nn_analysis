@@ -2,11 +2,12 @@
     "classifier__hidden_layer_dims":[[640, 416, 576, 192, 288, 32, 32]],
     "classifier__activation_functions":[["relu", "relu", "relu", "relu"]],
     "classifier__dropouts": [[0, 0, 0, 0, 0.01, 0, 0]],
+
     "classifier__task_activation":["linear"],
     "classifier__task_nodes":[1],
 
     "classifier__batch_size":[512],
-    "classifier__epochs":[1],
+    "classifier__epochs":[100],
     "classifier__optimizer":["adam"],
     "classifier__loss":["mean_squared_error"],
 
