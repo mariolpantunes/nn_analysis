@@ -8,6 +8,8 @@ import models
 import tensorflow as tf
 from metrics import mcc, mse
 from search import search
+import gc
+from sklearn.utils import shuffle
 
 tf.keras.utils.set_random_seed(1)
 
@@ -169,36 +171,38 @@ jobs = {} #gets a set of models to run for each dataset
 for f in hyper_files:
     params = json.load(open(f))
     dataset = params["dataset"]
+    params["classifier"] = [get_model(params["model"], params["is_categorical"])]
+
+    if "classifier__learning_rate" in params:
+        optimizers = []
+        for lr in params["classifier__learning_rate"]:
+            for optimizer in params["classifier__optimizer"]:
+                optimizers.append(models.get_optimizer(optimizer, lr))
+        params["classifier__optimizer"] = optimizers
+        del params["classifier__learning_rate"]
+
+    else:
+        params["classifier__optimizer"] = [models.get_optimizer(optimizer) for optimizer in params["classifier__optimizer"]]
+
+    scorer = mcc() if params["is_categorical"] else "neg_root_mean_squared_error"
+    output = params["output"]
+
+    check_hyperparameters(params, f)
+
+    del params["dataset"]
+    del params["is_categorical"]
+    del params["model"]
+    del params["output"]
 
     if dataset in jobs:
 
-        params["classifier"] = [get_model(params["model"], params["is_categorical"])]
-
-        check_hyperparameters(params, f)
-
-        del params["dataset"]
-        del params["is_categorical"]
-        del params["model"]
-        del params["output"]
-        
         jobs[dataset]["hyper_set"].append(params) 
 
     else:
 
-        params["classifier"] = [get_model(params["model"], params["is_categorical"])]
-        scorer = mcc() if params["is_categorical"] else "neg_root_mean_squared_error"
-        output = params["output"]
-
-        check_hyperparameters(params, f)
-
-        del params["dataset"]
-        del params["is_categorical"]
-        del params["model"]
-        del params["output"]
-
         jobs[dataset] = {"hyper_set" : [params], "scorer" : scorer, "output" : output}
 
-
+    params["classifier__callbacks"] = [[tf.keras.callbacks.EarlyStopping(monitor='loss', patience=10)]]
 '''
     Load the dataset and run experiment
 '''
@@ -227,13 +231,15 @@ for dataset in jobs:
 
     x_train, y_train = train_data
     #x_train = x_train[:,:,:,0]
+    if len(x_train) > 100000:
+        x_train, y_train = shuffle(x_train, y_train, random_state=42, n_samples=50000)
     
     for hyper_set in jobs[dataset]["hyper_set"]:
         hyper_set["classifier__input_shape"] = [x_train.shape[1:]]
 
-    if str(jobs[dataset]["scorer"]) == "make_scorer(mcc)" :
+    if str(jobs[dataset]["scorer"]) == "make_scorer(mcc)" and jobs[dataset]["hyper_set"][0]["classifier__loss"][0] == "categorical_crossentropy":
         y_train = tf.keras.utils.to_categorical(y_train)
-    
+
     '''
         Results folder creation
     '''
@@ -244,5 +250,9 @@ for dataset in jobs:
     '''
         Run search
     '''
-    search(jobs[dataset]["hyper_set"], x_train, y_train, scorer, jobs[dataset]["output"], dataset)
+    search(jobs[dataset]["hyper_set"], x_train, y_train, jobs[dataset]["scorer"], jobs[dataset]["output"], dataset)
+    gc.collect()
+    tf.keras.backend.clear_session()
+    tf.compat.v1.reset_default_graph()
+
 

@@ -1,0 +1,17 @@
+{
+    "classifier__hidden_layer_dims":[[992, 800, 960, 576]],
+    "classifier__activation_functions":[["relu", "relu", "relu", "relu"]],
+    "classifier__dropouts": [[0, 0, 0.26619229857031773, 0.3000871824016985]],
+    "classifier__task_activation":["sigmoid"],
+    "classifier__task_nodes":[1],
+
+    "classifier__batch_size":[512],
+    "classifier__epochs":[200],
+    "classifier__optimizer":["adam"],
+    "classifier__loss":["binary_crossentropy"],
+
+    "model":"dense",
+    "is_categorical":true,
+    "dataset" : "compas",
+    "output" : "./results/compas/results.csv"
+}

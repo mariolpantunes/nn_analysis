@@ -3,6 +3,32 @@ from tensorflow.keras.layers import (GRU, LSTM, BatchNormalization, Conv1D,
                                      Conv2D, Dense, Dropout, Flatten,
                                      MaxPooling1D, MaxPooling2D)
 from tensorflow.keras.models import Sequential
+from tensorflow.keras.optimizers import Adam, RMSprop, SGD, Adadelta, Adagrad, Adamax, Nadam, Ftrl
+
+def get_optimizer(optimizer, learning_rate=None):
+
+    if optimizer.lower() == "adam":
+        return Adam(learning_rate=learning_rate) if learning_rate else Adam()
+    elif optimizer.lower() == "rmsprop":
+        return RMSprop(learning_rate=learning_rate) if learning_rate else RMSprop()
+    elif optimizer.lower() == "sgd":
+        return SGD(learning_rate=learning_rate) if learning_rate else SGD()
+    elif optimizer.lower() == "adadelta":
+        return Adadelta(learning_rate=learning_rate) if learning_rate else Adadelta()
+    elif optimizer.lower() == "adagrad":
+        return Adagrad(learning_rate=learning_rate) if learning_rate else Adagrad()
+    elif optimizer.lower() == "adamax":
+        return Adamax(learning_rate=learning_rate) if learning_rate else Adamax()
+    elif optimizer.lower() == "nadam":
+        return Nadam(learning_rate=learning_rate) if learning_rate else Nadam()
+    elif optimizer.lower() == "ftrl":
+        return Ftrl(learning_rate=learning_rate) if learning_rate else Ftrl()
+    else:
+        raise ValueError(f'The optimizer {optimizer} is not supported!')
+    
+
+
+
 
 
 def create_dense_model(classification):
@@ -32,7 +58,7 @@ def create_dense_model(classification):
                             task_activation = 'softmax',
                             task_nodes = 1,
                             optimizer='adam',
-                            loss='categorical_crossentropy'
+                            loss='categorical_crossentropy',
                             )
 
     return KerasRegressor(model=model, 
@@ -44,7 +70,7 @@ def create_dense_model(classification):
                             task_activation = 'linear',
                             task_nodes = 1,
                             optimizer='adam',
-                            loss='mean_squared_error'
+                            loss='mean_squared_error',
                             )
 
 
@@ -110,7 +136,7 @@ def create_cnn_model(classifier):
                             dense_activations = ["relu"],
                             dense_dropouts = [0],
                             task_activation = "softmax",
-                            task_nodes = 1
+                            task_nodes = 1,
                             )
 
     return KerasRegressor(model=model, 
@@ -126,7 +152,7 @@ def create_cnn_model(classifier):
                             dense_activations = ["relu"],
                             dense_dropouts = [0],
                             task_activation = "linear",
-                            task_nodes = 1
+                            task_nodes = 1,
                             )
 
 def create_rnn_model(classifier):
@@ -174,7 +200,7 @@ def create_rnn_model(classifier):
                             dense_activations = ["relu"],
                             dense_dropouts = [0],
                             task_activation = 'softmax',
-                            task_nodes = 1
+                            task_nodes = 1,
                             )
 
     return KerasRegressor(model=model, 
@@ -188,5 +214,5 @@ def create_rnn_model(classifier):
                             dense_activations = ["relu"],
                             dense_dropouts = [0],
                             task_activation = 'linear',
-                            task_nodes = 1
+                            task_nodes = 1,
                             )

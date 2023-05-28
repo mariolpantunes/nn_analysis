@@ -1,0 +1,18 @@
+{
+    "classifier__hidden_layer_dims":[[224, 192, 608, 768, 800]],
+    "classifier__activation_functions":[["relu", "relu", "relu", "relu", "relu"]],
+    "classifier__dropouts": [[0, 0.16274924058193788, 0.26104216339396125, 0.36116482210282275, 0]],
+    "classifier__task_activation":["linear"],
+    "classifier__task_nodes":[1],
+
+    "classifier__batch_size":[1024],
+    "classifier__epochs":[200],
+
+    "classifier__optimizer":["adam"],
+    "classifier__loss":["mean_squared_error"],
+
+    "model":"dense",
+    "is_categorical":false,
+    "dataset" : "Abalone",
+    "output" : "./results/abalone/results.csv"
+}

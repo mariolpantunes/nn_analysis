@@ -6,8 +6,8 @@
     "classifier__task_nodes":[1],
 
     "classifier__batch_size":[1024],
-    "classifier__epochs":[1],
-    "classifier__optimizer":["adam"],
+    "classifier__epochs":[200],
+    "classifier__optimizer":["adam", "SGD", "RMSprop", "Adadelta", "Adagrad", "Adamax", "Nadam", "Ftrl"],
     "classifier__loss":["mean_squared_error"],
 
     "model":"dense",
