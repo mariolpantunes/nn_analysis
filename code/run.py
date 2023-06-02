@@ -1,4 +1,5 @@
 import argparse
+import gc
 import glob
 import json
 from os import makedirs, path
@@ -8,7 +9,6 @@ import models
 import tensorflow as tf
 from metrics import mcc, mse
 from search import search
-import gc
 from sklearn.utils import shuffle
 
 tf.keras.utils.set_random_seed(1)

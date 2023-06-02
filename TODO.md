@@ -1,7 +1,6 @@
 
 # For search (hyperparameters folder)
 - Define the sets of hyperparameters for each model/dataset.
-- Add learning rate as an option
 
 # In datasets
 - Define the pool of datasets used.
