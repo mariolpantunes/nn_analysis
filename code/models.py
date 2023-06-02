@@ -3,7 +3,9 @@ from tensorflow.keras.layers import (GRU, LSTM, BatchNormalization, Conv1D,
                                      Conv2D, Dense, Dropout, Flatten,
                                      MaxPooling1D, MaxPooling2D)
 from tensorflow.keras.models import Sequential
-from tensorflow.keras.optimizers import Adam, RMSprop, SGD, Adadelta, Adagrad, Adamax, Nadam, Ftrl
+from tensorflow.keras.optimizers import (SGD, Adadelta, Adagrad, Adam, Adamax,
+                                         Ftrl, Nadam, RMSprop)
+
 
 def get_optimizer(optimizer, learning_rate=None):
 

@@ -1,16 +1,17 @@
 import pathlib
 
-from dataset_loader import load_bike_sharing, load_abalone, load_delays_zurich, load_compas, load_covertype, load_higgs
-
+import keras_tuner
+import numpy as np
+import tensorflow as tf
+from dataset_loader import (load_abalone, load_bike_sharing, load_compas,
+                            load_covertype, load_delays_zurich, load_higgs)
+from sklearn.metrics import matthews_corrcoef, mean_squared_error
+from sklearn.utils import shuffle
 from tensorflow.keras.layers import (GRU, LSTM, BatchNormalization, Conv1D,
                                      Conv2D, Dense, Dropout, Flatten,
                                      MaxPooling1D, MaxPooling2D)
 from tensorflow.keras.models import Sequential
-from sklearn.metrics import mean_squared_error, matthews_corrcoef
-import keras_tuner
-import tensorflow as tf
-from sklearn.utils import shuffle
-import numpy as np
+
 tf.keras.utils.set_random_seed(42)
 
 def run_regression(output):
