@@ -8,7 +8,7 @@
     "classifier__batch_size":[512],
     "classifier__epochs":[200],
     "classifier__optimizer":["adam"],
-    "classifier__learning_rate":[0.00001, 0.0001, 0.001, 0.01, 0.1, 1, 10],
+    "classifier__learning_rate":[0.00001, 0.0001, 0.001, 0.01, 0.1],
     "classifier__loss":["categorical_crossentropy"],
 
     "model":"dense",

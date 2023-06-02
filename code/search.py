@@ -25,11 +25,18 @@ def search(params, x_train, y_train, scorer, output_file, dataset_name):
     param_names = sorted(param_names)
 
     for param_name in param_names:
-        values = []
+        if param_name == "classifier__optimizer":
+            values = [[],[]]
+        else:
+            values = []
         for param_set in grid_result.cv_results_['params']:
                 if param_name in param_set:
                     if param_name != "classifier":
-                        values.append(param_set[param_name])
+                        if param_name == "classifier__optimizer":
+                            values[0].append(param_set[param_name]._name)
+                            values[1].append(param_set[param_name].learning_rate.numpy())
+                        else:
+                            values.append(param_set[param_name])
                     else:
                         if "n_kernels" in param_set[param_name].get_params():
                             values.append("CNN")
@@ -41,7 +48,11 @@ def search(params, x_train, y_train, scorer, output_file, dataset_name):
                     values.append(np.NaN)
 
         if param_name != "classifier":
-            results[param_name.split("__")[1]] = values
+            if param_name == "classifier__optimizer":
+                results["optimizer"] = values[0]
+                results["learning_rate"] = values[1]
+            else:
+                results[param_name.split("__")[1]] = values
         else: 
             results[param_name] = values
 

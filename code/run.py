@@ -180,7 +180,7 @@ for f in hyper_files:
                 optimizers.append(models.get_optimizer(optimizer, lr))
         params["classifier__optimizer"] = optimizers
         del params["classifier__learning_rate"]
-
+        
     else:
         params["classifier__optimizer"] = [models.get_optimizer(optimizer) for optimizer in params["classifier__optimizer"]]
 

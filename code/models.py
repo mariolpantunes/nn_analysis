@@ -27,10 +27,6 @@ def get_optimizer(optimizer, learning_rate=None):
         raise ValueError(f'The optimizer {optimizer} is not supported!')
     
 
-
-
-
-
 def create_dense_model(classification):
 
     def model(input_shape, hidden_layer_dims, activation_functions, dropouts, task_activation, task_nodes):
@@ -137,6 +133,8 @@ def create_cnn_model(classifier):
                             dense_dropouts = [0],
                             task_activation = "softmax",
                             task_nodes = 1,
+                            optimizer='adam',
+                            loss='mean_squared_error',
                             )
 
     return KerasRegressor(model=model, 
@@ -153,6 +151,8 @@ def create_cnn_model(classifier):
                             dense_dropouts = [0],
                             task_activation = "linear",
                             task_nodes = 1,
+                            optimizer='adam',
+                            loss='mean_squared_error',
                             )
 
 def create_rnn_model(classifier):
@@ -201,6 +201,8 @@ def create_rnn_model(classifier):
                             dense_dropouts = [0],
                             task_activation = 'softmax',
                             task_nodes = 1,
+                            optimizer='adam',
+                            loss='mean_squared_error',
                             )
 
     return KerasRegressor(model=model, 
@@ -215,4 +217,6 @@ def create_rnn_model(classifier):
                             dense_dropouts = [0],
                             task_activation = 'linear',
                             task_nodes = 1,
+                            optimizer='adam',
+                            loss='mean_squared_error',
                             )
