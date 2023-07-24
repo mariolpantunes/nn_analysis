@@ -30,7 +30,7 @@ def run_regression(output):
         x_train, y_train = train_data
 
         if len(x_train) > 100000:
-            x_train, y_train = shuffle(x_train, y_train, random_state=42, n_samples=50000)
+            x_train, y_train = shuffle(x_train, y_train, random_state=42, n_samples=100000)
 
         def build_model(hp):
             model = Sequential()
@@ -103,13 +103,13 @@ def run_classification(output):
                         hp.Int("units_0", min_value=32, max_value=1024, step=32),
                         activation='relu', input_shape=x_train.shape[1:], name="dense_0"))
                 if hp.Boolean("dropout_0"):
-                    model.add(Dropout(rate=hp.Float("dropout_0_value", min_value=0.01, max_value=0.5, sampling='linear')))
+                    model.add(Dropout(rate=hp.Float("dropout_0_value", min_value=0.01, max_value=0.5, step=0.0001)))
                 for i in range(hp.Int("n_hidden_layers", min_value=3, max_value=7, step=1)):
                     model.add(Dense(
                         hp.Int(f"units_{i+1}", min_value=32, max_value=1024, step=32),
                         activation='relu', input_shape=x_train.shape[1:], name=f"dense_{i+1}"))
                     if hp.Boolean(f"dropout_{i+1}"):
-                        model.add(Dropout(rate=hp.Float(f"dropout_{i+1}_value", min_value=0.01, max_value=0.5, sampling='linear')))
+                        model.add(Dropout(rate=hp.Float(f"dropout_{i+1}_value", min_value=0.01, max_value=0.5, step=0.0001)))
 
                 model.add(Dense(n_features, activation='softmax', name=f"dense_{i+2}"))
                 model.compile(optimizer="adam", loss="categorical_crossentropy")
@@ -119,17 +119,17 @@ def run_classification(output):
                 hypermodel=build_model,
                 objective="val_loss",
                 max_trials=100,
-                executions_per_trial=1,
+                executions_per_trial=100,
                 overwrite=True,
                 directory=output_folder,
                 project_name="random_search",
             )
 
-            tuner.search(x_train, y_train, batch_size=1024, epochs=1, validation_split=0.2, verbose=0)
+            tuner.search(x_train, y_train, batch_size=1024, epochs=200, validation_split=0.2, verbose=0)
 
             best_hps = tuner.get_best_hyperparameters(1)
             model = build_model(best_hps[0])
-            model.fit(x_train, y_train, batch_size=1024, epochs=1 , validation_split=0.2, verbose=2)
+            model.fit(x_train, y_train, batch_size=1024, epochs=300 , validation_split=0.2, verbose=2)
             model.save(output_folder / "best_model")
 
             x_test, y_test = test_data
@@ -140,6 +140,6 @@ def run_classification(output):
             print(matthews_corrcoef(y_pred, y_test))
 
     
-results_base_path = "../results/random_search2/"
+results_base_path = "../results/trial_3/"
 output = pathlib.Path(results_base_path)
-run_regression(output)
+run_classification(output)

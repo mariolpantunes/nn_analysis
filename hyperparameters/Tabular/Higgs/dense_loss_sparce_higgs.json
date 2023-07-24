@@ -8,7 +8,7 @@
     "classifier__batch_size":[512],
     "classifier__epochs":[200],
     "classifier__optimizer":["adam"],
-    "classifier__loss":["sparse_categorical_cross_entropy"],
+    "classifier__loss":["sparse_categorical_crossentropy"],
 
     "model":"dense",
     "is_categorical":true,

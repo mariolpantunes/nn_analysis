@@ -14,7 +14,7 @@ def get_optimizer(optimizer, learning_rate=None):
     elif optimizer.lower() == "rmsprop":
         return RMSprop(learning_rate=learning_rate) if learning_rate else RMSprop()
     elif optimizer.lower() == "sgd":
-        return SGD(learning_rate=learning_rate) if learning_rate else SGD()
+        return SGD(learning_rate=learning_rate) if learning_rate else SGD(learning_rate=0.00001)
     elif optimizer.lower() == "adadelta":
         return Adadelta(learning_rate=learning_rate) if learning_rate else Adadelta()
     elif optimizer.lower() == "adagrad":

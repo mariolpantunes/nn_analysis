@@ -61,7 +61,7 @@ def search(params, x_train, y_train, scorer, output_file, dataset_name):
     results['Training Time (Avg)'] = np.round(grid_result.cv_results_['mean_fit_time'], 3)
     results['Training Time (Std)'] = np.round(grid_result.cv_results_['std_fit_time'], 3)
     results['Prediction Time (Avg)'] = np.round(grid_result.cv_results_['mean_score_time'], 3)
-    results['Training Time (Std)'] = np.round(grid_result.cv_results_['std_score_time'], 3)
+    results['Prediction Time (Std)'] = np.round(grid_result.cv_results_['std_score_time'], 3)
     results['dataset'] = dataset_name
 
     df = pd.DataFrame(results)
