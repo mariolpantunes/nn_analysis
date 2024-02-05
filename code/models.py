@@ -153,8 +153,6 @@ class DenseModel(keras_tuner.HyperModel):
             results = mean_squared_error(validation_data[1], predictions)
             return {'mse' : results}
 
-    
-
 class CNNModel(keras_tuner.HyperModel):
 
     def __init__(self, hyperparameters):
@@ -224,12 +222,10 @@ class CNNModel(keras_tuner.HyperModel):
                 outputs = conv_layer(n_kernels, 
                     kernel_size=kernel_size, 
                     activation=activation)(outputs)
-            
-            maxpooling_layer(pool_size=pool_size)
-
-            keras.layers.BatchNormalization()
-
-            outputs = keras.layers.Dropout(rate=dropout_rate)(outputs)
+                
+        outputs = maxpooling_layer(pool_size=pool_size)(outputs)
+        outputs = keras.layers.BatchNormalization()(outputs)
+        outputs = keras.layers.Dropout(rate=dropout_rate)(outputs)
 
         outputs = keras.layers.Flatten()(outputs)
         

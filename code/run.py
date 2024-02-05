@@ -179,15 +179,17 @@ for dataset in jobs:
     '''
     Just to understand the input shape
     '''
-    #print(x_train.shape)
     
     if len(x_train) > 50000:
         x_train, y_train = shuffle(x_train, y_train, random_state=42, n_samples=1000)
-
+    
+    #print(x_train.shape)
+    #x_train = x_train[:100]
+    #y_train = y_train[:100]
+    
     '''
         Results folder creation
     '''
-    ##Update this to be the correct folder
     results_dir = jobs[dataset]["output"]
     if not path.exists(results_dir):
         makedirs(results_dir)
