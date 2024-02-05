@@ -1,15 +1,3 @@
 
 # Running dense model
-python code/run.py --hyper hyperparameters/Abalone/DENSE/
-
-# Running cnn model
-python code/run.py --hyper hyperparameters/CIFAR10/CNN/
-
-# Running gru model
-python code/run.py --hyper hyperparameters/CIFAR10/RNN/ 
-
-# Load different hyperparameters with different datasets and models
-python code/run.py --hyper hyperparameters/test_different_datasets/ 
-
-# Load different hyperparameters with different models and the same dataset
-python code/run.py --hyper hyperparameters/test_same_dataset/ 
+python code_v2/run.py --hyper hyperparameters/TabularAbalone/

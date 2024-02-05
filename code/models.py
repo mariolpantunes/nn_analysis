@@ -1,224 +1,333 @@
-from scikeras.wrappers import KerasClassifier, KerasRegressor
-from tensorflow.keras.layers import (GRU, LSTM, BatchNormalization, Conv1D,
-                                     Conv2D, Dense, Dropout, Flatten,
-                                     MaxPooling1D, MaxPooling2D)
-from tensorflow.keras.models import Sequential
-from tensorflow.keras.optimizers import (SGD, Adadelta, Adagrad, Adam, Adamax,
-                                         Ftrl, Nadam, RMSprop)
+import keras_tuner
+import keras
+import numpy as np
+from sklearn.metrics import matthews_corrcoef, mean_squared_error, accuracy_score, f1_score
+from skimage.color import rgb2gray
 
-
-def get_optimizer(optimizer, learning_rate=None):
+def get_optimizer(optimizer):
 
     if optimizer.lower() == "adam":
-        return Adam(learning_rate=learning_rate) if learning_rate else Adam()
+        return keras.optimizers.Adam
     elif optimizer.lower() == "rmsprop":
-        return RMSprop(learning_rate=learning_rate) if learning_rate else RMSprop()
+        return keras.optimizers.RMSprop
     elif optimizer.lower() == "sgd":
-        return SGD(learning_rate=learning_rate) if learning_rate else SGD(learning_rate=0.00001)
+        return keras.optimizers.SGD
     elif optimizer.lower() == "adadelta":
-        return Adadelta(learning_rate=learning_rate) if learning_rate else Adadelta()
+        return keras.optimizers.Adadelta
     elif optimizer.lower() == "adagrad":
-        return Adagrad(learning_rate=learning_rate) if learning_rate else Adagrad()
+        return keras.optimizers.Adagrad
     elif optimizer.lower() == "adamax":
-        return Adamax(learning_rate=learning_rate) if learning_rate else Adamax()
+        return keras.optimizers.Adamax
     elif optimizer.lower() == "nadam":
-        return Nadam(learning_rate=learning_rate) if learning_rate else Nadam()
+        return keras.optimizers.Nadam
     elif optimizer.lower() == "ftrl":
-        return Ftrl(learning_rate=learning_rate) if learning_rate else Ftrl()
+        return keras.optimizers.Ftrl
     else:
         raise ValueError(f'The optimizer {optimizer} is not supported!')
+
+class DenseModel(keras_tuner.HyperModel):
+
+    def __init__(self, hyperparameters):
+        super().__init__()
+        self.is_categorical = False
+        self.hyperparameters = hyperparameters
+        if "binary_crossentropy" in hyperparameters["loss"] or \
+            "sparse_categorical_crossentropy" in hyperparameters["loss"] or \
+            "categorical_crossentropy" in hyperparameters["loss"]:
+            self.is_categorical = True
+        
+        self.metrics = ['accuracy'] if self.is_categorical else ['mean_squared_error']# Add new_metrics
+
+
+    def build(self, hp):
+        inputs = keras.Input(shape=(self.hyperparameters["input_shape"]))
+        outputs = None
+
+        optimizer = hp.Choice("optimizer", self.hyperparameters["optimizer"])
+        learning_rate = hp.Float("learning_rate",  min_value=self.hyperparameters["lr"][0],
+                                  max_value=self.hyperparameters["lr"][1], 
+                                  step=self.hyperparameters["lr"][2])
+        
+        self.loss = hp.Choice("loss", self.hyperparameters["loss"])
+        
+        n_nodes = hp.Int(f"n_dense_nodes",  min_value=self.hyperparameters["n_dense_nodes"][0], 
+                            max_value=self.hyperparameters["n_dense_nodes"][1], 
+                            step=self.hyperparameters["n_dense_nodes"][2])
+        
+        activation = hp.Choice(f"dense_activation", self.hyperparameters["dense_activation_fn"])
+
+        dropout_rate = hp.Float(f"dense_dropout_rate", min_value=self.hyperparameters["dense_dropout"][0], 
+                                max_value=self.hyperparameters["dense_dropout"][1], 
+                                step=self.hyperparameters["dense_dropout"][2])
+            
+        for i in range(hp.Int("n_dense_layers", min_value=self.hyperparameters["n_dense_layers"][0], 
+                              max_value=self.hyperparameters["n_dense_layers"][1], 
+                              step=self.hyperparameters["n_dense_layers"][2])):
+            if outputs == None:
+                outputs = keras.layers.Dense(n_nodes, activation=activation)(inputs)
+            else:
+                outputs = keras.layers.Dense(n_nodes, activation=activation)(outputs)
+
+            outputs = keras.layers.Dropout(rate=dropout_rate)(outputs)
+        
+
+        if self.loss == "binary_crossentropy":
+            outputs = keras.layers.Dense(units=1, activation="sigmoid")(outputs)
+        elif self.loss in "sparse_categorical_crossentropy":
+            outputs = keras.layers.Dense(units=self.hyperparameters["n_classes"], activation="sigmoid")(outputs)
+        else:
+            outputs = keras.layers.Dense(units=1, activation="linear")(outputs)
+            self.is_categorical = False
+
+        model = keras.Model(inputs, outputs)
+        
+        model.compile(
+            optimizer=get_optimizer(optimizer)(learning_rate=learning_rate),
+            loss=self.loss,
+            metrics=self.metrics, 
+        )
+        return model
+
+    def preprocess_data(self, x, y, validation_data):
+        ##Add transformations based on the dataset we use
+        ##Flatten images, remove time dependencies etc.
+
+        if self.loss == "categorical_crossentropy":
+            y = keras.utils.to_categorical(y)
+            if validation_data:
+                x_val, y_val = validation_data
+                y_val = keras.utils.to_categorical(y_val)
+                validation_data = (x_val, y_val)
+
+        if self.hyperparameters["dataset"] == "cifar10":
+            x_new = np.zeros((x.shape[0], x.shape[1]*x.shape[2]))
+
+            for i in range(len(x)):
+                x_new[i, :] = rgb2gray(x[i,:]).flatten()
+            
+            x = x_new
+
+            if validation_data:
+                x_val, y_val = validation_data
+                x_val_new = np.zeros((x_val.shape[0], x_val.shape[1]*x_val.shape[2]))
+
+                for i in range(len(x_val)):
+                    x_val_new[i, :] = rgb2gray(x_val[i,:]).flatten()
+
+                validation_data = (x_val_new, y_val)
+
+        return x, y, validation_data
+
+    #In case we want to optimize anything of the training
+    def fit(self, hp, model, x, y, validation_data=None, *args, **kwargs):
+
+        #Transform y_train and y_val in categorical and preprocess X to the correct format
+        x, y, validation_data = self.preprocess_data(x, y, validation_data)
+
+        batch_size = hp.Int("batch_size", min_value=self.hyperparameters["batch_size"][0], 
+                                        max_value=self.hyperparameters["batch_size"][1], 
+                                        step=self.hyperparameters["batch_size"][2])
+        
+        kwargs["callbacks"].append(keras.callbacks.EarlyStopping(monitor='val_loss', patience=30))
+
+        model.fit(
+            x,
+            y,
+            batch_size= batch_size,
+            epochs = self.hyperparameters["epochs"],
+            validation_data=validation_data,
+            verbose = 0,
+            shuffle=True,
+            **kwargs
+        )
+
+        if self.is_categorical:
+            predictions = [round(x[0]) for x in model.predict(validation_data[0], verbose=0)] if self.loss == "binary_crossentropy" \
+                            else [np.argmax(x) for x in model.predict(validation_data[0], verbose=0)]
+            
+            y_val =  [np.argmax(x) for x in validation_data[1]] if self.loss == "categorical_crossentropy" else validation_data[1]
+
+            return {'mcc' : matthews_corrcoef(y_val, predictions), 'acc' : accuracy_score(y_val, predictions), 'f1' : f1_score(y_val, predictions, average="macro")}
+        else:
+            predictions = model.predict(validation_data[0], verbose=0).reshape((-1,))
+            results = mean_squared_error(validation_data[1], predictions)
+            return {'mse' : results}
+
     
 
-def create_dense_model(classification):
+class CNNModel(keras_tuner.HyperModel):
 
-    def model(input_shape, hidden_layer_dims, activation_functions, dropouts, task_activation, task_nodes):
-        model = Sequential()
+    def __init__(self, hyperparameters):
+        super().__init__()
 
-        model.add(Dense(units=hidden_layer_dims[0], input_shape=input_shape, activation=activation_functions[0]))
-        if dropouts[0] > 0:
-            model.add(Dropout(dropouts[0]))
-        for i in range(1, len(hidden_layer_dims)):
-            model.add(Dense(units=hidden_layer_dims[i], activation=activation_functions[i]))
-            if dropouts[i] > 0:
-                model.add(Dropout(dropouts[i]))
+        self.is_categorical = False
+        self.hyperparameters = hyperparameters
+        if "binary_crossentropy" in hyperparameters["loss"] or \
+            "sparse_categorical_crossentropy" in hyperparameters["loss"] or \
+            "categorical_crossentropy" in hyperparameters["loss"]:
+            self.is_categorical = True
         
-        model.add(Dense(units=task_nodes,activation=task_activation))
+        self.metrics = ['accuracy'] if self.is_categorical else ['mean_squared_error']# Add new_metrics
+
+
+    def build(self, hp):
+
+        if self.hyperparameters["dimension"] == 1:
+            conv_layer = keras.layers.Conv1D
+            maxpooling_layer = keras.layers.MaxPooling1D
+
+        elif self.hyperparameters["dimension"] == 2:
+            conv_layer = keras.layers.Conv2D
+            maxpooling_layer = keras.layers.MaxPooling2D
+
+        else:
+            conv_layer = keras.layers.Conv3D
+            maxpooling_layer = keras.layers.MaxPooling3D
+
+        inputs = keras.Input(shape=(self.hyperparameters["input_shape"]))
+        outputs = None
+
+        optimizer = hp.Choice("optimizer", self.hyperparameters["optimizer"])
+        learning_rate = hp.Float("learning_rate",  min_value=self.hyperparameters["lr"][0],
+                                  max_value=self.hyperparameters["lr"][1], 
+                                  step=self.hyperparameters["lr"][2])
         
+        self.loss = hp.Choice("loss", self.hyperparameters["loss"])
+        
+        n_kernels = hp.Int(f"n_kernels",  min_value=self.hyperparameters["n_kernels"][0], 
+                            max_value=self.hyperparameters["n_kernels"][1], 
+                            step=self.hyperparameters["n_kernels"][2])
+        
+        kernel_size = hp.Int(f"kernel_size",  min_value=self.hyperparameters["kernel_size"][0], 
+                            max_value=self.hyperparameters["kernel_size"][1], 
+                            step=self.hyperparameters["kernel_size"][2])
+        
+        pool_size = hp.Int(f"pool_size",  min_value=self.hyperparameters["pool_size"][0], 
+                            max_value=self.hyperparameters["pool_size"][1], 
+                            step=self.hyperparameters["pool_size"][2])
+        
+        activation = hp.Choice(f"conv_activation", self.hyperparameters["conv_activation_fn"])
+
+        dropout_rate = hp.Float(f"conv_dropout_rate", min_value=self.hyperparameters["conv_dropout"][0], 
+                                max_value=self.hyperparameters["conv_dropout"][1], 
+                                step=self.hyperparameters["conv_dropout"][2])
+        
+        for i in range(hp.Int("n_conv_layers", min_value=self.hyperparameters["n_conv_layers"][0], 
+                              max_value=self.hyperparameters["n_conv_layers"][1], 
+                              step=self.hyperparameters["n_conv_layers"][2])):
+            
+            if outputs == None:
+                outputs = conv_layer(n_kernels, 
+                    kernel_size=kernel_size, 
+                    activation=activation)(inputs)
+            else:
+                outputs = conv_layer(n_kernels, 
+                    kernel_size=kernel_size, 
+                    activation=activation)(outputs)
+            
+            maxpooling_layer(pool_size=pool_size)
+
+            keras.layers.BatchNormalization()
+
+            outputs = keras.layers.Dropout(rate=dropout_rate)(outputs)
+
+        outputs = keras.layers.Flatten()(outputs)
+        
+        n_nodes = hp.Int(f"n_dense_nodes",  min_value=self.hyperparameters["n_dense_nodes"][0], 
+                            max_value=self.hyperparameters["n_dense_nodes"][1], 
+                            step=self.hyperparameters["n_dense_nodes"][2])
+        
+        activation = hp.Choice(f"dense_activation", self.hyperparameters["dense_activation_fn"])
+
+        dropout_rate = hp.Float(f"dense_dropout_rate", min_value=self.hyperparameters["dense_dropout"][0], 
+                                max_value=self.hyperparameters["dense_dropout"][1], 
+                                step=self.hyperparameters["dense_dropout"][2])
+            
+        for i in range(hp.Int("n_dense_layers", min_value=self.hyperparameters["n_dense_layers"][0], 
+                              max_value=self.hyperparameters["n_dense_layers"][1], 
+                              step=self.hyperparameters["n_dense_layers"][2])):
+            
+            outputs = keras.layers.Dense(n_nodes, activation=activation)(outputs)
+
+            outputs = keras.layers.Dropout(rate=dropout_rate)(outputs)
+        
+        if self.loss == "binary_crossentropy":
+            outputs = keras.layers.Dense(units=1, activation="sigmoid")(outputs)
+        elif self.loss in "sparse_categorical_crossentropy":
+            outputs = keras.layers.Dense(units=self.hyperparameters["n_classes"], activation="sigmoid")(outputs)
+        else:
+            outputs = keras.layers.Dense(units=1, activation="linear")(outputs)
+            self.is_categorical = False
+
+        model = keras.Model(inputs, outputs)
+        
+        model.compile(
+            optimizer=get_optimizer(optimizer)(learning_rate=learning_rate),
+            loss=self.loss,
+            metrics=self.metrics, 
+        )
         return model
 
-    if classification:
-        return KerasClassifier(model=model, 
-                            verbose=0, 
-                            input_shape=(768,),
-                            hidden_layer_dims=[100],
-                            activation_functions = ['relu'],
-                            dropouts = [0],
-                            task_activation = 'softmax',
-                            task_nodes = 1,
-                            optimizer='adam',
-                            loss='categorical_crossentropy',
-                            )
+    def preprocess_data(self, x, y, validation_data):
+        ##Add transformations based on the dataset we use
+        ##Flatten images, remove time dependencies etc.
 
-    return KerasRegressor(model=model, 
-                            verbose=0, 
-                            input_shape=(768,),
-                            hidden_layer_dims=[100],
-                            activation_functions = ['relu'],
-                            dropouts = [0],
-                            task_activation = 'linear',
-                            task_nodes = 1,
-                            optimizer='adam',
-                            loss='mean_squared_error',
-                            )
+        if self.loss == "categorical_crossentropy":
+            y = keras.utils.to_categorical(y)
+            if validation_data:
+                x_val, y_val = validation_data
+                y_val = keras.utils.to_categorical(y_val)
+                validation_data = (x_val, y_val)
 
-
-def create_cnn_model(classifier):
-
-    def model(input_shape, dimension, 
-            n_kernels, kernel_sizes, pool_sizes, 
-            activation_functions, dropouts, 
-            dense_sizes, dense_activations, dense_dropouts, 
-            task_activation, task_nodes):
-
-        if dimension == 2:
-            conv = Conv2D
-            maxpooling = MaxPooling2D
-        elif dimension == 1:
-            conv = Conv1D
-            maxpooling = MaxPooling1D
-
-        model = Sequential()
-        model.add(conv(n_kernels[0], 
-                kernel_size=kernel_sizes[0], 
-                activation=activation_functions[0], 
-                input_shape=input_shape))
-
-        model.add(maxpooling(pool_size=pool_sizes[0]))
-        model.add(BatchNormalization())
-        if dropouts[0] > 0:
-            model.add(Dropout(dropouts[0]))
-
-        for i in range(1, len(kernel_sizes)):
-            model.add(conv(n_kernels[i], 
-                    kernel_size=kernel_sizes[i], 
-                    activation=activation_functions[i]))
-
-            model.add(maxpooling(pool_size=pool_sizes[i]))
-            model.add(BatchNormalization())
-            if dropouts[i] > 0:
-                model.add(Dropout(dropouts[i]))
-
-
-        model.add(Flatten())
-        for i in range(len(dense_sizes)):
-            model.add(Dense(dense_sizes[i], activation=dense_activations[i]))
-            if dense_dropouts[i] > 0:
-                model.add(Dropout(dense_dropouts[i]))
-
-
-        model.add(Dense(task_nodes, activation=task_activation))
-
-        return model
+        return x, y, validation_data
     
-    if classifier:
-        return KerasClassifier(model=model, 
-                            verbose=0, 
-                            input_shape=(32,32,),
-                            dimension = 2,
-                            n_kernels=[32],
-                            kernel_sizes=[(3,3)],
-                            pool_sizes = [2],
-                            activation_functions = ["relu"],
-                            dropouts = [0],
-                            dense_sizes = [100],
-                            dense_activations = ["relu"],
-                            dense_dropouts = [0],
-                            task_activation = "softmax",
-                            task_nodes = 1,
-                            optimizer='adam',
-                            loss='mean_squared_error',
-                            )
+    #In case we want to optimize anything of the training
+    def fit(self, hp, model, x, y, validation_data=None, **kwargs):
 
-    return KerasRegressor(model=model, 
-                            verbose=0, 
-                            input_shape=(32,32,),
-                            dimension = 2,
-                            n_kernels=[32],
-                            kernel_sizes=[(3,3)],
-                            pool_sizes = [2],
-                            activation_functions = ["relu"],
-                            dropouts = [0],
-                            dense_sizes = [100],
-                            dense_activations = ["relu"],
-                            dense_dropouts = [0],
-                            task_activation = "linear",
-                            task_nodes = 1,
-                            optimizer='adam',
-                            loss='mean_squared_error',
-                            )
+        #Transform y_train and y_val in categorical and preprocess X to the correct format
+        x, y, validation_data = self.preprocess_data(x, y, validation_data)
 
-def create_rnn_model(classifier):
-
-    def model(input_shape, 
-            rnn_node, hidden_layer_dims, activation_functions, dropouts,
-            dense_sizes, dense_activations, dense_dropouts, 
-            task_activation, task_nodes):
-
-        return_sequences = True if len(hidden_layer_dims) > 1 else False
-
-        model = Sequential()
-        rnn_node = GRU if rnn_node == "GRU" else LSTM
-        model.add(rnn_node(units=hidden_layer_dims[0], input_shape=input_shape, activation=activation_functions[0]))
-        if dropouts[0] > 0:
-            model.add(Dropout(dropouts[0]))
-
-        for i in range(1, len(hidden_layer_dims)):
-            model.add(rnn_node(units=hidden_layer_dims[i], 
-                    activation=activation_functions[i], 
-                    return_sequences=return_sequences))
-                    
-            return_sequences = True if i < len(hidden_layer_dims) - 2 else False
-            if dropouts[i] > 0:
-                model.add(Dropout(dropouts[i]))
+        batch_size = hp.Int("batch_size", min_value=self.hyperparameters["batch_size"][0], 
+                                        max_value=self.hyperparameters["batch_size"][1], 
+                                        step=self.hyperparameters["batch_size"][2])
         
-        for i in range(len(dense_sizes)):
-            model.add(Dense(units=dense_sizes[i],activation=dense_activations[i]))
-            if dense_dropouts[i] > 0:
-                model.add(Dropout(dense_dropouts[i]))
+        kwargs["callbacks"].append(keras.callbacks.EarlyStopping(monitor='val_loss', patience=30))
 
-        model.add(Dense(units=task_nodes,activation=task_activation))
+        model.fit(
+            x,
+            y,
+            batch_size= batch_size,
+            epochs = self.hyperparameters["epochs"],
+            validation_data=validation_data,
+            verbose = 0,
+            shuffle=True,
+            **kwargs
+        )
 
-        return model
+        if self.is_categorical:
+            predictions = [round(x[0]) for x in model.predict(validation_data[0], verbose=0)] if self.loss == "binary_crossentropy" \
+                            else [np.argmax(x) for x in model.predict(validation_data[0], verbose=0)]
+            
+            y_val =  [np.argmax(x) for x in validation_data[1]] if self.loss == "categorical_crossentropy" else validation_data[1]
 
-    if classifier:
-        return KerasClassifier(model=model, 
-                            verbose=0, 
-                            input_shape=(10,10),
-                            rnn_node="GRU",
-                            hidden_layer_dims=[10],
-                            activation_functions = ["tanh"],
-                            dropouts = [0],
-                            dense_sizes = [100],
-                            dense_activations = ["relu"],
-                            dense_dropouts = [0],
-                            task_activation = 'softmax',
-                            task_nodes = 1,
-                            optimizer='adam',
-                            loss='mean_squared_error',
-                            )
+            return {'mcc' : matthews_corrcoef(y_val, predictions), 'acc' : accuracy_score(y_val, predictions), 'f1' : f1_score(y_val, predictions, average="macro")}
+        else:
+            predictions = model.predict(validation_data[0], verbose=0).reshape((-1,))
+            results = mean_squared_error(validation_data[1], predictions)
+            return {'mse' : results}
+    
+class RNNModel(keras_tuner.HyperModel):
 
-    return KerasRegressor(model=model, 
-                            verbose=0, 
-                            input_shape=(10,10),
-                            rnn_node="GRU",
-                            hidden_layer_dims=[10],
-                            activation_functions = ["tanh"],
-                            dropouts = [0],
-                            dense_sizes = [100],
-                            dense_activations = ["relu"],
-                            dense_dropouts = [0],
-                            task_activation = 'linear',
-                            task_nodes = 1,
-                            optimizer='adam',
-                            loss='mean_squared_error',
-                            )
+    def __init__(self, hyperparameters):
+        super().__init__()
+
+        self.hyperparameters = hyperparameters
+
+
+    def build(self, hp):
+        pass
+
+    #In case we want to optimize anything of the training
+    def fit(self, hp, model, x, y, validation_data=None, **kwargs):
+
+        pass

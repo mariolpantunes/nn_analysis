@@ -1,4 +1,5 @@
 import nltk
+import numpy as np
 import pandas as pd
 from nltk.corpus import stopwords
 from nltk.stem import PorterStemmer
@@ -6,6 +7,7 @@ from sklearn import datasets
 from sklearn.feature_extraction.text import TfidfVectorizer
 from tensorflow.keras.datasets import cifar10, fashion_mnist
 from textblob import TextBlob
+from sklearn.model_selection import train_test_split
 
 from datasets import load_dataset
 
@@ -60,86 +62,74 @@ def load_fashion_mnist():
 def load_covertype(): #Tabular classification categoric_numeric (high number of examples)
     dataset = load_dataset("inria-soda/tabular-benchmark",  data_files="clf_cat/covertype.csv", split="train")
     dataset = dataset.to_pandas().values
-    train_length = int(dataset.shape[0]*0.8)
 
-    x_train = dataset[:train_length,:-1]
-    y_train = dataset[:train_length,-1] -1
+    x = dataset[:,:-1]
+    y = dataset[:,-1] -1
 
-    x_test = dataset[train_length:,:-1]
-    y_test = dataset[train_length:,-1] -1
+    x_train, x_test, y_train, y_test = train_test_split(x, y, test_size=0.2, random_state=42)
 
     return (x_train, y_train), (x_test, y_test)
 
 def load_higgs(): #Tabular classification numeric (high number of examples)
     dataset = load_dataset("inria-soda/tabular-benchmark",  data_files="clf_num/Higgs.csv", split="train")
     dataset = dataset.to_pandas().values
-    train_length = int(dataset.shape[0]*0.8)
 
-    x_train = dataset[:train_length,:-1]
-    y_train = dataset[:train_length,-1]
+    x = dataset[:,:-1]
+    y = dataset[:,-1] 
 
-    x_test = dataset[train_length:,:-1]
-    y_test = dataset[train_length:,-1]
+    x_train, x_test, y_train, y_test = train_test_split(x, y, test_size=0.2, random_state=42)
 
     return (x_train, y_train), (x_test, y_test)
 
 def load_compas(): #Tabular classification categoric (low examples)
     dataset = load_dataset("inria-soda/tabular-benchmark",  data_files="clf_cat/compas-two-years.csv", split="train")
     dataset = dataset.to_pandas().values
-    train_length = int(dataset.shape[0]*0.8)
+    
+    x = dataset[:,:-1]
+    y = dataset[:,-1] 
 
-    x_train = dataset[:train_length,:-1]
-    y_train = dataset[:train_length,-1]
+    x_train, x_test, y_train, y_test = train_test_split(x, y, test_size=0.2, random_state=42)
 
-    x_test = dataset[train_length:,:-1]
-    y_test = dataset[train_length:,-1]
-
-    return (x_train, y_train), (x_test, y_test) 
+    return (x_train, y_train), (x_test, y_test)
 
 def load_delays_zurich(): #Tabular regression numeric
     dataset = load_dataset("inria-soda/tabular-benchmark",  data_files="reg_num/delays_zurich_transport.csv", split="train")
     dataset = dataset.to_pandas().values
-    train_length = int(dataset.shape[0]*0.8)
+    
+    x = dataset[:,:-1]
+    y = dataset[:,-1] 
 
-    x_train = dataset[:train_length,:-1]
-    y_train = dataset[:train_length,-1]
+    x_train, x_test, y_train, y_test = train_test_split(x, y, test_size=0.2, random_state=42)
 
-    x_test = dataset[train_length:,:-1]
-    y_test = dataset[train_length:,-1]
-
-    return (x_train, y_train), (x_test, y_test) 
+    return (x_train, y_train), (x_test, y_test)
 
 def load_abalone(): #Tabular regression mixture (low examples)
     dataset = load_dataset("inria-soda/tabular-benchmark",  data_files="reg_cat/abalone.csv", split="train")
     dataset = dataset.to_pandas().values
-    train_length = int(dataset.shape[0]*0.8)
+    
+    x = dataset[:,:-1]
+    y = dataset[:,-1] 
 
-    x_train = dataset[:train_length,:-1]
-    y_train = dataset[:train_length,-1]
+    x_train, x_test, y_train, y_test = train_test_split(x, y, test_size=0.2, random_state=42)
 
-    x_test = dataset[train_length:,:-1]
-    y_test = dataset[train_length:,-1]
-
-    return (x_train, y_train), (x_test, y_test) 
+    return (x_train, y_train), (x_test, y_test)
 
 
 def load_bike_sharing(): #Tabular regression mixture (numerous examples, more cat then reg)
     dataset = load_dataset("inria-soda/tabular-benchmark",  data_files="reg_cat/Bike_Sharing_Demand.csv", split="train")
     dataset = dataset.to_pandas().values
-    train_length = int(dataset.shape[0]*0.8)
+    
+    x = dataset[:,:-1]
+    y = dataset[:,-1] 
 
-    x_train = dataset[:train_length,:-1]
-    y_train = dataset[:train_length,-1]
+    x_train, x_test, y_train, y_test = train_test_split(x, y, test_size=0.2, random_state=42)
 
-    x_test = dataset[train_length:,:-1]
-    y_test = dataset[train_length:,-1]
-
-    return (x_train, y_train), (x_test, y_test) 
+    return (x_train, y_train), (x_test, y_test)
 
 
 def load_sms_spam_collection(): 
 
-    dataset = pd.read_csv("..\\nn_analysis\\datasets\\SMSSpamCollection", sep='\t', header=None, names=["v1", "v2"])
+    dataset = pd.read_csv('datasets/SMSSpamCollection', sep='\t', header=None, names=["v1", "v2"])
 
     #lower case
     dataset["v2"] = dataset["v2"].str.lower()
@@ -187,4 +177,5 @@ def load_sms_spam_collection():
     x_test = tfidf_df.iloc[train_length: , 1:tfidf_df.shape[1]].values
     y_test = tfidf_df.iloc[train_length: , 0].values
 
+    x_train = np.reshape(x_train, (train_length, 1, x_train.shape[1]) )
     return (x_train, y_train), (x_test, y_test) 
