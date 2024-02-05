@@ -6,3 +6,4 @@ scikeras
 keras-tuner
 nltk
 textblob
+scikit-image
