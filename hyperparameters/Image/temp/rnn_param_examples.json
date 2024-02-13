@@ -1,20 +1,25 @@
 {
-    "classifier__rnn_node": ["GRU"],
-    "classifier__hidden_layer_dims":[[10]],
-    "classifier__activation_functions": [["tanh"]],
-    "classifier__dropouts": [[0]],
-    "classifier__dense_sizes" : [[50]],
-    "classifier__dense_activations" :[["relu"]],
-    "classifier__dense_dropouts": [[0]],
-    "classifier__task_activation":["softmax"],
-    "classifier__task_nodes":[10],
+    "rnn_layer": ["lstm", "gru"],
+    "n_rnn_layers" : [1, 8, 1],
+    "n_rnn_nodes":[64, 1024, 64],
+    "rnn_activation":["relu", "sigmoid", "softmax", "softplus", "softsign", "tanh", "selu", "elu", 
+    "leaky_relu", "relu6", "silu", "gelu", "hard_sigmoid", "linear", "mish", "log_softmax"],
+    "rnn_dropout" : [0, 0.8, 0.1],
+    "n_dense_layers": [1, 8, 1],
+    "n_dense_nodes":[64, 1024, 64],
+    "dense_activation_fn":["relu", "sigmoid", "softmax", "softplus", "softsign", "tanh", "selu", "elu", 
+            "leaky_relu", "relu6", "silu", "gelu", "hard_sigmoid", "linear", "mish", "log_softmax"],
+    "dense_dropout": [0, 0.8, 0.1],
+    
+    "batch_size":[64, 8096, 124],
+    "lr": [0.00001, 0.3, 0.00003],
+    "optimizer": ["Adam", "SGD", "RMSprop", "Adadelta", "Adagrad", "Adamax", "Nadam", "Ftrl"],
+    "loss":["sparse_categorical_crossentropy", "categorical_crossentropy"],
 
-    "classifier__epochs":[2],
-    "classifier__optimizer":["adam"],
-    "classifier__loss":["categorical_crossentropy"],
-
-    "model":"rnn",
-    "is_categorical" : true,
-    "dataset" : "CIFAR10",
-    "output" : "./results/gru/results.csv"
+    "n_classes": 10,
+    "epochs": 200,
+    "model": "rnn",
+    "dataset" : "cifar10",
+    "input_shape" : [32,32],
+    "n_searches" : 3
 }

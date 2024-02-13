@@ -183,9 +183,9 @@ for dataset in jobs:
     if len(x_train) > 50000:
         x_train, y_train = shuffle(x_train, y_train, random_state=42, n_samples=1000)
     
-    #print(x_train.shape)
-    #x_train = x_train[:100]
-    #y_train = y_train[:100]
+    print(x_train.shape)
+    x_train = x_train[:100]
+    y_train = y_train[:100]
     
     '''
         Results folder creation

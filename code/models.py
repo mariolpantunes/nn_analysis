@@ -356,8 +356,8 @@ class RNNModel(keras_tuner.HyperModel):
         n_layers = hp.Int("n_rnn_layers", min_value=self.hyperparameters["n_rnn_layers"][0], 
                               max_value=self.hyperparameters["n_rnn_layers"][1], 
                               step=self.hyperparameters["n_rnn_layers"][2])
-        for i in range():
-            return_sequences = True if i < len(n_layers) -1 else False
+        for i in range(n_layers):
+            return_sequences = True if i < n_layers -1 else False
             if outputs == None:
                 outputs = rnn_layer(units=n_nodes, 
                     activation=activation, 
@@ -379,10 +379,11 @@ class RNNModel(keras_tuner.HyperModel):
         dropout_rate = hp.Float(f"dense_dropout_rate", min_value=self.hyperparameters["dense_dropout"][0], 
                                 max_value=self.hyperparameters["dense_dropout"][1], 
                                 step=self.hyperparameters["dense_dropout"][2])
-            
-        for i in range(hp.Int("n_dense_layers", min_value=self.hyperparameters["n_dense_layers"][0], 
+        n_layers = hp.Int("n_dense_layers", min_value=self.hyperparameters["n_dense_layers"][0], 
                               max_value=self.hyperparameters["n_dense_layers"][1], 
-                              step=self.hyperparameters["n_dense_layers"][2])):
+                              step=self.hyperparameters["n_dense_layers"][2])
+        
+        for i in range(n_layers):
             if outputs == None:
                 outputs = keras.layers.Dense(n_nodes, activation=activation)(inputs)
             else:
@@ -420,19 +421,19 @@ class RNNModel(keras_tuner.HyperModel):
                 validation_data = (x_val, y_val)
 
         if self.hyperparameters["dataset"] == "cifar10":
-            x_new = np.zeros((x.shape[0], x.shape[1]*x.shape[2]))
+            x_new = np.zeros((x.shape[0], x.shape[1], x.shape[2]))
 
             for i in range(len(x)):
-                x_new[i, :] = rgb2gray(x[i,:]).flatten()
+                x_new[i, :] = rgb2gray(x[i,:])
             
             x = x_new
 
             if validation_data:
                 x_val, y_val = validation_data
-                x_val_new = np.zeros((x_val.shape[0], x_val.shape[1]*x_val.shape[2]))
+                x_val_new = np.zeros((x_val.shape[0], x_val.shape[1], x_val.shape[2]))
 
                 for i in range(len(x_val)):
-                    x_val_new[i, :] = rgb2gray(x_val[i,:]).flatten()
+                    x_val_new[i, :] = rgb2gray(x_val[i,:])
 
                 validation_data = (x_val_new, y_val)
 
