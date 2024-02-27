@@ -17,7 +17,7 @@ Missing correcting for verifications
 '''
 def check_hyperparameters(hyperparameters, f):#elu, 
     activation_functions = ["relu", "sigmoid", "softmax", "softplus", "softsign", "tanh", "selu", "elu", 
-            "leaky_relu", "relu6", "silu", "gelu", "hard_sigmoid", "linear", "mish", "log_softmax"]
+            "leaky_relu", "relu6", "silu", "gelu", "hard_sigmoid", "linear", "mish", "log_softmax", "swish"]
     
     optimizers = ["Adam", "SGD", "RMSprop", "Adadelta", "Adagrad", "Adamax", "Nadam", "Ftrl"]
 
@@ -97,9 +97,9 @@ def check_hyperparameters(hyperparameters, f):#elu,
                 ", please check file: " + f)
                   
     if hyperparameters['model']  == "cnn": # this will be changed in the future
-        print("hello")        
+        a= 0
     elif hyperparameters['model']  == "rnn":# this will be changed in the future
-        print("hello")            
+        z=0
     elif  hyperparameters['model']  != "dense":
         raise ValueError(f"Invalid Neural network type - {hyperparameters['model']}, it should be one of the supported values [dense, cnn, rnn]"+
                     ", please check file: " + f)
@@ -113,6 +113,7 @@ parser.add_argument(
     required=True,
     help='Folder with multiple hyperparameter sets' 
 )
+parser.add_argument('-o', default="results/", type=str, help='Folder where the results are stored')
 
 args = parser.parse_args()
 
@@ -133,8 +134,6 @@ for f in hyper_files:
     params = json.load(open(f))
     dataset = params["dataset"]
 
-    output = f"./results/{dataset}"
-
     check_hyperparameters(params, f)
 
     if params["model"] == "dense":
@@ -148,7 +147,7 @@ for f in hyper_files:
         jobs[dataset]["hyper_sets"].append(params) 
 
     else:
-        jobs[dataset] = {"hyper_sets" : [params], "output" : output}
+        jobs[dataset] = {"hyper_sets" : [params], "output" : f"{args.o}/{dataset}"}
 
 '''
     Load the dataset and run experiment
@@ -181,11 +180,7 @@ for dataset in jobs:
     '''
     
     if len(x_train) > 50000:
-        x_train, y_train = shuffle(x_train, y_train, random_state=42, n_samples=1000)
-    
-    print(x_train.shape)
-    x_train = x_train[:100]
-    y_train = y_train[:100]
+        x_train, y_train = shuffle(x_train, y_train, random_state=42, n_samples=50000)
     
     '''
         Results folder creation
@@ -198,6 +193,9 @@ for dataset in jobs:
         Run search
     '''
     search(dataset, jobs[dataset]["hyper_sets"], x_train, y_train, test_data, jobs[dataset]["output"])
+    del x_train
+    del y_train
+        
     gc.collect()
     tf.keras.backend.clear_session()
     tf.compat.v1.reset_default_graph()
