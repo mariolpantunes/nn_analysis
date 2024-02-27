@@ -1,5 +1,4 @@
 datasets
-tensorflow[and-gpu]
 pandas
 scikit-learn
 scikeras
