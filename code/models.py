@@ -1,8 +1,10 @@
 import keras_tuner
 import keras
+import tensorflow as tf
 import numpy as np
-from sklearn.metrics import matthews_corrcoef, mean_squared_error, accuracy_score, f1_score
+from sklearn.metrics import matthews_corrcoef, mean_squared_error, accuracy_score, f1_score, mean_absolute_error, r2_score
 from skimage.color import rgb2gray
+import time
 
 def get_optimizer(optimizer):
 
@@ -68,7 +70,7 @@ class DenseModel(keras_tuner.HyperModel):
             else:
                 outputs = keras.layers.Dense(n_nodes, activation=activation)(outputs)
 
-            outputs = keras.layers.Dropout(rate=dropout_rate)(outputs)
+            outputs = keras.layers.Dropout(dropout_rate)(outputs)
         
 
         if self.loss == "binary_crossentropy":
@@ -88,7 +90,7 @@ class DenseModel(keras_tuner.HyperModel):
         )
         return model
 
-    def preprocess_data(self, x, y, validation_data):
+    def preprocess_data(self, x, y, validation_data, batch_size):
         ##Add transformations based on the dataset we use
         ##Flatten images, remove time dependencies etc.
 
@@ -116,42 +118,61 @@ class DenseModel(keras_tuner.HyperModel):
 
                 validation_data = (x_val_new, y_val)
 
-        return x, y, validation_data
+        return tf.data.Dataset.from_tensor_slices((x, y)).batch(batch_size), tf.data.Dataset.from_tensor_slices(validation_data).batch(batch_size)
 
     #In case we want to optimize anything of the training
     def fit(self, hp, model, x, y, validation_data=None, *args, **kwargs):
-
-        #Transform y_train and y_val in categorical and preprocess X to the correct format
-        x, y, validation_data = self.preprocess_data(x, y, validation_data)
 
         batch_size = hp.Int("batch_size", min_value=self.hyperparameters["batch_size"][0], 
                                         max_value=self.hyperparameters["batch_size"][1], 
                                         step=self.hyperparameters["batch_size"][2])
         
-        kwargs["callbacks"].append(keras.callbacks.EarlyStopping(monitor='val_loss', patience=30))
+        train_data, val_data = self.preprocess_data(x, y, validation_data, batch_size)
 
+        kwargs["callbacks"].append(keras.callbacks.EarlyStopping(monitor='val_loss', patience=30))
+        train_time = time.time()
         model.fit(
-            x,
-            y,
+            x=train_data,
             batch_size= batch_size,
             epochs = self.hyperparameters["epochs"],
-            validation_data=validation_data,
+            validation_data=val_data,
             verbose = 0,
             shuffle=True,
             **kwargs
         )
+        train_time = time.time() -  train_time
 
         if self.is_categorical:
-            predictions = [round(x[0]) for x in model.predict(validation_data[0], verbose=0)] if self.loss == "binary_crossentropy" \
-                            else [np.argmax(x) for x in model.predict(validation_data[0], verbose=0)]
+            infer_time = time.time()
+            predictions = model.predict(val_data, verbose=0)
+            infer_time = time.time() - infer_time
+
+            predictions = [round(x[0]) for x in predictions] if self.loss == "binary_crossentropy" \
+                            else [np.argmax(x) for x in predictions]
             
             y_val =  [np.argmax(x) for x in validation_data[1]] if self.loss == "categorical_crossentropy" else validation_data[1]
 
-            return {'mcc' : matthews_corrcoef(y_val, predictions), 'acc' : accuracy_score(y_val, predictions), 'f1' : f1_score(y_val, predictions, average="macro")}
+            return {'mcc' : matthews_corrcoef(y_val, predictions),
+                    'acc' : accuracy_score(y_val, predictions), 
+                    'f1-score' : f1_score(y_val, predictions, average="macro"),
+                    'train_time' : train_time,
+                    'infer_time' : infer_time}
         else:
-            predictions = model.predict(validation_data[0], verbose=0).reshape((-1,))
-            results = mean_squared_error(validation_data[1], predictions)
-            return {'mse' : results}
+            infer_time = time.time()
+            predictions = model.predict(val_data, verbose=0)
+            infer_time = time.time() - infer_time
+
+            predictions = predictions.reshape((-1,))
+
+            return {'mse' :  mean_squared_error(validation_data[1], predictions),
+                    'mae' : mean_absolute_error(validation_data[1], predictions),
+                    'train_time' : train_time,
+                    'infer_time' : infer_time}
+
+        del train_data
+        del val_data
+        del validation_data
+        del predictions
 
 class CNNModel(keras_tuner.HyperModel):
 
@@ -166,7 +187,6 @@ class CNNModel(keras_tuner.HyperModel):
             self.is_categorical = True
         
         self.metrics = ['accuracy'] if self.is_categorical else ['mean_squared_error']# Add new_metrics
-
 
     def build(self, hp):
 
@@ -225,9 +245,9 @@ class CNNModel(keras_tuner.HyperModel):
                 
         outputs = maxpooling_layer(pool_size=pool_size)(outputs)
         outputs = keras.layers.BatchNormalization()(outputs)
-        outputs = keras.layers.Dropout(rate=dropout_rate)(outputs)
-
         outputs = keras.layers.Flatten()(outputs)
+        outputs = keras.layers.Dropout(dropout_rate)(outputs)
+
         
         n_nodes = hp.Int(f"n_dense_nodes",  min_value=self.hyperparameters["n_dense_nodes"][0], 
                             max_value=self.hyperparameters["n_dense_nodes"][1], 
@@ -245,7 +265,7 @@ class CNNModel(keras_tuner.HyperModel):
             
             outputs = keras.layers.Dense(n_nodes, activation=activation)(outputs)
 
-            outputs = keras.layers.Dropout(rate=dropout_rate)(outputs)
+            outputs = keras.layers.Dropout(dropout_rate)(outputs)
         
         if self.loss == "binary_crossentropy":
             outputs = keras.layers.Dense(units=1, activation="sigmoid")(outputs)
@@ -264,7 +284,7 @@ class CNNModel(keras_tuner.HyperModel):
         )
         return model
 
-    def preprocess_data(self, x, y, validation_data):
+    def preprocess_data(self, x, y, validation_data, batch_size):
         ##Add transformations based on the dataset we use
         ##Flatten images, remove time dependencies etc.
 
@@ -275,43 +295,65 @@ class CNNModel(keras_tuner.HyperModel):
                 y_val = keras.utils.to_categorical(y_val)
                 validation_data = (x_val, y_val)
 
-        return x, y, validation_data
+        return tf.data.Dataset.from_tensor_slices((x, y)).batch(batch_size), tf.data.Dataset.from_tensor_slices(validation_data).batch(batch_size)
+
     
     #In case we want to optimize anything of the training
     def fit(self, hp, model, x, y, validation_data=None, **kwargs):
 
-        #Transform y_train and y_val in categorical and preprocess X to the correct format
-        x, y, validation_data = self.preprocess_data(x, y, validation_data)
-
         batch_size = hp.Int("batch_size", min_value=self.hyperparameters["batch_size"][0], 
                                         max_value=self.hyperparameters["batch_size"][1], 
                                         step=self.hyperparameters["batch_size"][2])
-        
+
+        train_data, val_data = self.preprocess_data(x, y, validation_data, batch_size)
+
         kwargs["callbacks"].append(keras.callbacks.EarlyStopping(monitor='val_loss', patience=30))
 
+        train_time = time.time()
         model.fit(
-            x,
-            y,
-            batch_size= batch_size,
+            train_data,
+            batch_size=batch_size,
             epochs = self.hyperparameters["epochs"],
-            validation_data=validation_data,
+            validation_data=val_data,
             verbose = 0,
             shuffle=True,
             **kwargs
         )
+        train_time = time.time() - train_time
+
 
         if self.is_categorical:
-            predictions = [round(x[0]) for x in model.predict(validation_data[0], verbose=0)] if self.loss == "binary_crossentropy" \
-                            else [np.argmax(x) for x in model.predict(validation_data[0], verbose=0)]
+            infer_time = time.time()
+            predictions = model.predict(val_data, verbose=0)
+            infer_time = time.time() - infer_time
+
+            predictions = [round(x[0]) for x in predictions] if self.loss == "binary_crossentropy" \
+                            else [np.argmax(x) for x in predictions]
             
             y_val =  [np.argmax(x) for x in validation_data[1]] if self.loss == "categorical_crossentropy" else validation_data[1]
 
-            return {'mcc' : matthews_corrcoef(y_val, predictions), 'acc' : accuracy_score(y_val, predictions), 'f1' : f1_score(y_val, predictions, average="macro")}
+            return {'mcc' : matthews_corrcoef(y_val, predictions), 
+                    'acc' : accuracy_score(y_val, predictions), 
+                    'f1-score' : f1_score(y_val, predictions, average="macro"),
+                    'train_time' : train_time,
+                    'infer_time' : infer_time}
         else:
-            predictions = model.predict(validation_data[0], verbose=0).reshape((-1,))
-            results = mean_squared_error(validation_data[1], predictions)
-            return {'mse' : results}
-    
+            infer_time = time.time()
+            predictions = model.predict(val_data, verbose=0)
+            infer_time = time.time() - infer_time
+
+            predictions = predictions.reshape((-1,))
+            return {'mse' : mean_squared_error(validation_data[1], predictions),
+                    'mae' : mean_absolute_error(validation_data[1], predictions),
+                    'train_time' : train_time,
+                    'infer_time' : infer_time}
+
+        del train_data
+        del val_data
+        del validation_data
+        del predictions
+
+
 class RNNModel(keras_tuner.HyperModel):
 
     def __init__(self, hyperparameters):

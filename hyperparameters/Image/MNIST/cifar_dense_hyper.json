@@ -6,12 +6,12 @@
     "batch_size":[64, 8096, 124],
     "lr": [0.00001, 0.3, 0.00003],
     "optimizer": ["Adam", "SGD", "RMSprop", "Adadelta", "Adagrad", "Adamax", "Nadam", "Ftrl"],
-    "loss":["sparse_categorical_crossentropy", "binary_crossentropy", "categorical_crossentropy"],
+    "loss":["sparse_categorical_crossentropy", "categorical_crossentropy"],
 
-    "n_classes": 2,
+    "n_classes": 10,
     "epochs": 200,
-    "model":"dense",
-    "dataset" : "covertype",
-    "input_shape" : [54],
+    "model": "dense",
+    "dataset" : "mnist",
+    "input_shape" : [1024],
     "n_searches" : 100
 }

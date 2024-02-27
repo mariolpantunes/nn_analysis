@@ -20,7 +20,7 @@
     "n_classes": 10,
     "epochs": 200,
     "model": "cnn",
-    "dataset" : "cifar10",
+    "dataset" : "fashion_mnist",
     "input_shape" : [32,32,3],
     "n_searches" : 100
 }
