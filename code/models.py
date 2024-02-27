@@ -101,11 +101,12 @@ class DenseModel(keras_tuner.HyperModel):
                 y_val = keras.utils.to_categorical(y_val)
                 validation_data = (x_val, y_val)
 
-        if self.hyperparameters["dataset"] == "cifar10":
+        if self.hyperparameters["dataset"] in ["cifar10", "cifar100", "mnist", "fashion_mnist"]:
             x_new = np.zeros((x.shape[0], x.shape[1]*x.shape[2]))
 
+            
             for i in range(len(x)):
-                x_new[i, :] = rgb2gray(x[i,:]).flatten()
+                x_new[i, :] = rgb2gray(x[i,:]).flatten() if self.hyperparameters["dataset"] in ["cifar10", "cifar100"] else x[i,:].flatten()
             
             x = x_new
 
@@ -114,7 +115,7 @@ class DenseModel(keras_tuner.HyperModel):
                 x_val_new = np.zeros((x_val.shape[0], x_val.shape[1]*x_val.shape[2]))
 
                 for i in range(len(x_val)):
-                    x_val_new[i, :] = rgb2gray(x_val[i,:]).flatten()
+                    x_val_new[i, :] = rgb2gray(x_val[i,:]).flatten() if self.hyperparameters["dataset"] in ["cifar10", "cifar100"] else x_val[i,:].flatten()
 
                 validation_data = (x_val_new, y_val)
 
@@ -151,28 +152,37 @@ class DenseModel(keras_tuner.HyperModel):
                             else [np.argmax(x) for x in predictions]
             
             y_val =  [np.argmax(x) for x in validation_data[1]] if self.loss == "categorical_crossentropy" else validation_data[1]
-
-            return {'mcc' : matthews_corrcoef(y_val, predictions),
+            
+            results = {'mcc' : matthews_corrcoef(y_val, predictions),
                     'acc' : accuracy_score(y_val, predictions), 
                     'f1-score' : f1_score(y_val, predictions, average="macro"),
                     'train_time' : train_time,
                     'infer_time' : infer_time}
+            
+            del train_data
+            del val_data
+            del validation_data
+            del predictions
+
+            return results
         else:
             infer_time = time.time()
             predictions = model.predict(val_data, verbose=0)
             infer_time = time.time() - infer_time
 
             predictions = predictions.reshape((-1,))
-
-            return {'mse' :  mean_squared_error(validation_data[1], predictions),
+            results = {'mse' :  mean_squared_error(validation_data[1], predictions),
                     'mae' : mean_absolute_error(validation_data[1], predictions),
                     'train_time' : train_time,
                     'infer_time' : infer_time}
 
-        del train_data
-        del val_data
-        del validation_data
-        del predictions
+            del train_data
+            del val_data
+            del validation_data
+            del predictions
+            
+            return results
+        
 
 class CNNModel(keras_tuner.HyperModel):
 

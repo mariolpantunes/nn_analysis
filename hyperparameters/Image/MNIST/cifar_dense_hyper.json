@@ -12,6 +12,6 @@
     "epochs": 200,
     "model": "dense",
     "dataset" : "mnist",
-    "input_shape" : [1024],
+    "input_shape" : [784],
     "n_searches" : 100
 }

@@ -156,6 +156,12 @@ for dataset in jobs:
 
     if dataset.lower() == "cifar10":
         train_data, test_data = dataset_loader.load_cifar10()
+    elif dataset.lower() == "cifar100":
+        train_data, test_data = dataset_loader.load_cifar100()
+    elif dataset.lower() == "mnist":
+        train_data, test_data = dataset_loader.load_mnist()
+    elif dataset.lower() == "fashion_mnist":
+        train_data, test_data = dataset_loader.load_fashion_mnist()
     elif dataset.lower() == "abalone":
         train_data, test_data = dataset_loader.load_abalone()
     elif dataset.lower() == "bike_sharing":
@@ -174,7 +180,6 @@ for dataset in jobs:
         train_data, test_data= dataset_loader.load_dataset_from_file(dataset)
 
     x_train, y_train = train_data
-    
     '''
     Just to understand the input shape
     '''

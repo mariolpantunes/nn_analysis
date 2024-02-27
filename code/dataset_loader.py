@@ -5,7 +5,7 @@ from nltk.corpus import stopwords
 from nltk.stem import PorterStemmer
 from sklearn import datasets
 from sklearn.feature_extraction.text import TfidfVectorizer
-from tensorflow.keras.datasets import cifar10, fashion_mnist, mnist
+from tensorflow.keras.datasets import cifar10, fashion_mnist, mnist, cifar100
 from textblob import TextBlob
 from sklearn.model_selection import train_test_split
 
@@ -35,6 +35,19 @@ def load_dataset_from_file(file_location):
 
 def load_cifar10():
     (x_train, y_train), (x_test, y_test) = cifar10.load_data()
+
+    # Parse numbers as floats
+    x_train = x_train.astype('float32')
+    x_test = x_test.astype('float32')
+
+    # Normalize data
+    x_train = x_train / 255
+    x_test = x_test / 255
+
+    return (x_train, y_train), (x_test, y_test)
+
+def load_cifar100():
+    (x_train, y_train), (x_test, y_test) = cifar100.load_data()
 
     # Parse numbers as floats
     x_train = x_train.astype('float32')

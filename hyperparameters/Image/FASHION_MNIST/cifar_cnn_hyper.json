@@ -1,5 +1,5 @@
 {
-    "dimension": 2,
+    "dimension": 1,
     "n_conv_layers" : [1, 4, 1],
     "n_kernels": [8, 64, 8],
     "kernel_size" : [3, 9, 2],
@@ -21,6 +21,6 @@
     "epochs": 200,
     "model": "cnn",
     "dataset" : "fashion_mnist",
-    "input_shape" : [32,32,3],
-    "n_searches" : 100
+    "input_shape" : [28, 28],
+    "n_searches" : 3
 }
