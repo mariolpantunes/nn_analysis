@@ -8,6 +8,7 @@ from sklearn.feature_extraction.text import TfidfVectorizer
 from tensorflow.keras.datasets import cifar10, fashion_mnist, mnist, cifar100
 from textblob import TextBlob
 from sklearn.model_selection import train_test_split
+import cv2
 
 from datasets import load_dataset
 
@@ -149,3 +150,47 @@ def load_bike_sharing(): #Tabular regression mixture (numerous examples, more ca
     x_train, x_test, y_train, y_test = train_test_split(x, y, test_size=0.2, random_state=42)
 
     return (x_train, y_train), (x_test, y_test)
+
+def load_license_plate():
+
+    def preprocess(sample):
+        image = sample["image"]
+        image = np.array(image)
+        target_size = 224
+        img_shape = image.shape
+        bbox = sample["objects"]["bbox"][0]
+        # resize the image
+        image = cv2.resize(image, (target_size, target_size))
+        # normalize the image
+        image = image / 255.0
+        # update the bounding box
+        bbox = [
+            int(bbox[0] * (target_size / img_shape[1])),
+            int(bbox[1] * (target_size / img_shape[0])),
+            int(bbox[2] * (target_size / img_shape[1])),
+            int(bbox[3] * (target_size / img_shape[0])),
+        ]
+        return image, bbox
+
+    ds = load_dataset("keremberke/license-plate-object-detection", name="full")
+
+    train_x = []
+    train_y = []
+    for sample in ds["train"]:
+        image, bbox = preprocess(sample)
+        train_x.append(image)
+        train_y.append(bbox)
+
+    train_x = np.array(train_x)
+    train_y = np.array(train_y)
+
+    val_x = []
+    val_y = []
+    for sample in ds["validation"]:
+        image, bbox = preprocess(sample)
+        val_x.append(image)
+        val_y.append(bbox)
+    val_x = np.array(val_x)
+    val_y = np.array(val_y)
+
+    return (train_x, train_y), (val_x, val_y)

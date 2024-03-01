@@ -8,10 +8,10 @@
     "optimizer": ["Adam", "SGD", "RMSprop", "Adadelta", "Adagrad", "Adamax", "Nadam", "Ftrl"],
     "loss":["sparse_categorical_crossentropy", "categorical_crossentropy"],
 
-    "n_classes": 10,
+    "n_outputs": 10,
     "epochs": 200,
     "model": "dense",
-    "dataset" : "cifar10",
-    "input_shape" : [1024],
+    "dataset" : "fashion_mnist",
+    "input_shape" : [784],
     "n_searches" : 100
 }

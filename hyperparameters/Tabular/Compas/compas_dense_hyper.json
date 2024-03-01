@@ -8,8 +8,8 @@
     "optimizer": ["Adam", "SGD", "RMSprop", "Adadelta", "Adagrad", "Adamax", "Nadam", "Ftrl"],
     "loss":["sparse_categorical_crossentropy", "binary_crossentropy", "categorical_crossentropy"],
 
+    "n_outputs": 2,
     "epochs": 200,
-    "n_classes": 2,
     "model":"dense",
     "dataset" : "compas",
     "input_shape" : [11],

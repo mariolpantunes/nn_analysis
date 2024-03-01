@@ -15,12 +15,12 @@
     "batch_size":[64, 8096, 124],
     "lr": [0.00001, 0.3, 0.00003],
     "optimizer": ["Adam", "SGD", "RMSprop", "Adadelta", "Adagrad", "Adamax", "Nadam", "Ftrl"],
-    "loss":["sparse_categorical_crossentropy", "categorical_crossentropy"],
+    "loss":["mean_squared_error", "mean_absolute_error", "mean_absolute_percentage_error", "mean_squared_logarithmic_error"],
 
-    "n_classes": 100,
+    "n_outputs": 4,
     "epochs": 200,
     "model": "cnn",
-    "dataset" : "cifar100",
-    "input_shape" : [32,32,3],
-    "n_searches" : 3
+    "dataset" : "license_plate",
+    "input_shape" : [224, 224, 3],
+    "n_searches" : 100
 }

@@ -10,7 +10,8 @@ def search(dataset_name, hyper_sets, x_train, y_train, val_data, output):
     ##Add here code to run the experiments
     for hyper_set in hyper_sets:
         model = hyper_set["model"](hyper_set)
-        
+        print(f"Running experiment for dataset:{dataset_name} and model: {hyper_set['model'].__name__}")
+
         objective = keras_tuner.Objective("mcc", "max") \
                     if model.is_categorical else \
                         keras_tuner.Objective("mse", "min")

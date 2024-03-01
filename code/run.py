@@ -174,6 +174,8 @@ for dataset in jobs:
         train_data, test_data = dataset_loader.load_compas()
     elif dataset.lower() == "covertype":
         train_data, test_data = dataset_loader.load_covertype()
+    elif dataset.lower() == "license_plate":
+        train_data, test_data = dataset_loader.load_license_plate()
     else:
         if not path.exists(dataset):
             raise ValueError("Dataset file does not exist.")

@@ -7,7 +7,8 @@
     "lr": [0.00001, 0.3, 0.00003],
     "optimizer": ["Adam", "SGD", "RMSprop", "Adadelta", "Adagrad", "Adamax", "Nadam", "Ftrl"],
     "loss":["mean_squared_error", "mean_absolute_error", "mean_absolute_percentage_error", "mean_squared_logarithmic_error"],
-
+    
+    "n_outputs": 1,
     "epochs":200,
     "model":"dense",
     "dataset" : "bike_sharing",
