@@ -132,7 +132,7 @@ jobs = {} #gets a set of models to run for each dataset
 
 for f in hyper_files:
     params = json.load(open(f))
-    dataset = params["dataset"]
+    dataset = params["dataset"].lower()
 
     check_hyperparameters(params, f)
 
@@ -154,28 +154,32 @@ for f in hyper_files:
 '''
 for dataset in jobs:
 
-    if dataset.lower() == "cifar10":
+    if dataset == "cifar10":
         train_data, test_data = dataset_loader.load_cifar10()
-    elif dataset.lower() == "cifar100":
+    elif dataset == "cifar100":
         train_data, test_data = dataset_loader.load_cifar100()
-    elif dataset.lower() == "mnist":
+    elif dataset == "mnist":
         train_data, test_data = dataset_loader.load_mnist()
-    elif dataset.lower() == "fashion_mnist":
+    elif dataset == "fashion_mnist":
         train_data, test_data = dataset_loader.load_fashion_mnist()
-    elif dataset.lower() == "abalone":
+    elif dataset == "abalone":
         train_data, test_data = dataset_loader.load_abalone()
-    elif dataset.lower() == "bike_sharing":
+    elif dataset == "bike_sharing":
         train_data, test_data = dataset_loader.load_bike_sharing()
-    elif dataset.lower() == "higgs":
+    elif dataset == "higgs":
         train_data, test_data = dataset_loader.load_higgs()
-    elif dataset.lower() == "delays_zurich":
+    elif dataset == "delays_zurich":
         train_data, test_data = dataset_loader.load_delays_zurich()
-    elif dataset.lower() == "compas":
+    elif dataset == "compas":
         train_data, test_data = dataset_loader.load_compas()
-    elif dataset.lower() == "covertype":
+    elif dataset == "covertype":
         train_data, test_data = dataset_loader.load_covertype()
-    elif dataset.lower() == "license_plate":
+    elif dataset == "license_plate":
         train_data, test_data = dataset_loader.load_license_plate()
+    elif dataset == "utk_faces":
+        train_data, test_data = dataset_loader.load_utk_faces()
+    elif dataset == "mri":
+        train_data, test_data = dataset_loader.mri()
     else:
         if not path.exists(dataset):
             raise ValueError("Dataset file does not exist.")

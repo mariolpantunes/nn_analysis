@@ -14,8 +14,8 @@ from datasets import load_dataset
 
 '''
     Loads a csv file in the format feature1, feature2, ..., label.
-    Divides it into 80% for training and 20% for testing.
-    Returns ((x_train, y_train), (x_test, y_test))
+    Divides it into 80% for training and 20% for validation.
+    Returns ((x_train, y_train), (x_val, y_val))
 '''
 def load_dataset_from_file(file_location): 
 
@@ -29,60 +29,60 @@ def load_dataset_from_file(file_location):
     x_train = data.iloc[:train_length,:data.shape[1]-1].values
     y_train = data.iloc[:train_length, data.shape[1]-1].values
 
-    x_test = data.iloc[train_length: , :data.shape[1]-1].values
-    y_test = data.iloc[train_length: , data.shape[1]-1].values
+    x_val = data.iloc[train_length: , :data.shape[1]-1].values
+    y_val = data.iloc[train_length: , data.shape[1]-1].values
 
-    return (x_train, y_train), (x_test, y_test)
+    return (x_train, y_train), (x_val, y_val)
 
 def load_cifar10():
     (x_train, y_train), (x_test, y_test) = cifar10.load_data()
 
     # Parse numbers as floats
     x_train = x_train.astype('float32')
-    x_test = x_test.astype('float32')
 
     # Normalize data
     x_train = x_train / 255
-    x_test = x_test / 255
 
-    return (x_train, y_train), (x_test, y_test)
+    x_train, x_val, y_train, y_val = train_test_split(x_train, y_train, test_size=0.2, random_state=42)
+
+    return (x_train, y_train), (x_val, y_val)
 
 def load_cifar100():
     (x_train, y_train), (x_test, y_test) = cifar100.load_data()
 
     # Parse numbers as floats
     x_train = x_train.astype('float32')
-    x_test = x_test.astype('float32')
 
     # Normalize data
     x_train = x_train / 255
-    x_test = x_test / 255
 
-    return (x_train, y_train), (x_test, y_test)
+    x_train, x_val, y_train, y_val = train_test_split(x_train, y_train, test_size=0.2, random_state=42)
+    
+    return (x_train, y_train), (x_val, y_val)
 
 def load_mnist():
     (x_train, y_train), (x_test, y_test) = mnist.load_data()
 
     x_train = x_train.astype('float32')
-    x_test = x_test.astype('float32')
 
     # Normalize data
     x_train = x_train / 255
-    x_test = x_test / 255
 
-    return (x_train, y_train), (x_test, y_test)
+    x_train, x_val, y_train, y_val = train_test_split(x_train, y_train, test_size=0.2, random_state=42)
+    
+    return (x_train, y_train), (x_val, y_val)
 
 def load_fashion_mnist():
     (x_train, y_train), (x_test, y_test) = fashion_mnist.load_data()
 
     x_train = x_train.astype('float32')
-    x_test = x_test.astype('float32')
 
     # Normalize data
     x_train = x_train / 255
-    x_test = x_test / 255
 
-    return (x_train, y_train), (x_test, y_test)
+    x_train, x_val, y_train, y_val = train_test_split(x_train, y_train, test_size=0.2, random_state=42)
+    
+    return (x_train, y_train), (x_val, y_val)
 
 def load_covertype(): #Tabular classification categoric_numeric (high number of examples)
     dataset = load_dataset("inria-soda/tabular-benchmark",  data_files="clf_cat/covertype.csv", split="train")
@@ -93,7 +93,9 @@ def load_covertype(): #Tabular classification categoric_numeric (high number of 
 
     x_train, x_test, y_train, y_test = train_test_split(x, y, test_size=0.2, random_state=42)
 
-    return (x_train, y_train), (x_test, y_test)
+    x_train, x_val, y_train, y_val = train_test_split(x_train, y_train, test_size=0.2, random_state=42)
+
+    return (x_train, y_train), (x_val, y_val)
 
 def load_higgs(): #Tabular classification numeric (high number of examples)
     dataset = load_dataset("inria-soda/tabular-benchmark",  data_files="clf_num/Higgs.csv", split="train")
@@ -104,7 +106,9 @@ def load_higgs(): #Tabular classification numeric (high number of examples)
 
     x_train, x_test, y_train, y_test = train_test_split(x, y, test_size=0.2, random_state=42)
 
-    return (x_train, y_train), (x_test, y_test)
+    x_train, x_val, y_train, y_val = train_test_split(x_train, y_train, test_size=0.2, random_state=42)
+
+    return (x_train, y_train), (x_val, y_val)
 
 def load_compas(): #Tabular classification categoric (low examples)
     dataset = load_dataset("inria-soda/tabular-benchmark",  data_files="clf_cat/compas-two-years.csv", split="train")
@@ -115,7 +119,9 @@ def load_compas(): #Tabular classification categoric (low examples)
 
     x_train, x_test, y_train, y_test = train_test_split(x, y, test_size=0.2, random_state=42)
 
-    return (x_train, y_train), (x_test, y_test)
+    x_train, x_val, y_train, y_val = train_test_split(x_train, y_train, test_size=0.2, random_state=42)
+
+    return (x_train, y_train), (x_val, y_val)
 
 def load_delays_zurich(): #Tabular regression numeric
     dataset = load_dataset("inria-soda/tabular-benchmark",  data_files="reg_num/delays_zurich_transport.csv", split="train")
@@ -126,7 +132,9 @@ def load_delays_zurich(): #Tabular regression numeric
 
     x_train, x_test, y_train, y_test = train_test_split(x, y, test_size=0.2, random_state=42)
 
-    return (x_train, y_train), (x_test, y_test)
+    x_train, x_val, y_train, y_val = train_test_split(x_train, y_train, test_size=0.2, random_state=42)
+
+    return (x_train, y_train), (x_val, y_val)
 
 def load_abalone(): #Tabular regression mixture (low examples)
     dataset = load_dataset("inria-soda/tabular-benchmark",  data_files="reg_cat/abalone.csv", split="train")
@@ -137,7 +145,9 @@ def load_abalone(): #Tabular regression mixture (low examples)
 
     x_train, x_test, y_train, y_test = train_test_split(x, y, test_size=0.2, random_state=42)
 
-    return (x_train, y_train), (x_test, y_test)
+    x_train, x_val, y_train, y_val = train_test_split(x_train, y_train, test_size=0.2, random_state=42)
+
+    return (x_train, y_train), (x_val, y_val)
 
 
 def load_bike_sharing(): #Tabular regression mixture (numerous examples, more cat then reg)
@@ -149,7 +159,9 @@ def load_bike_sharing(): #Tabular regression mixture (numerous examples, more ca
 
     x_train, x_test, y_train, y_test = train_test_split(x, y, test_size=0.2, random_state=42)
 
-    return (x_train, y_train), (x_test, y_test)
+    x_train, x_val, y_train, y_val = train_test_split(x_train, y_train, test_size=0.2, random_state=42)
+
+    return (x_train, y_train), (x_val, y_val)
 
 def load_license_plate():
 
@@ -178,6 +190,68 @@ def load_license_plate():
     train_y = []
     for sample in ds["train"]:
         image, bbox = preprocess(sample)
+        train_x.append(image)
+        train_y.append(bbox)
+
+    train_x = np.array(train_x)
+    train_y = np.array(train_y)
+
+    val_x = []
+    val_y = []
+    for sample in ds["validation"]:
+        image, bbox = preprocess(sample)
+        val_x.append(image)
+        val_y.append(bbox)
+    val_x = np.array(val_x)
+    val_y = np.array(val_y)
+
+    return (train_x, train_y), (val_x, val_y)
+
+def load_utk_faces():
+    dataset = load_dataset("nlphuji/utk_faces")["test"]
+    
+    images = []
+    ages = []
+    for sample in dataset:
+        images.append(np.array(sample["image"]))
+        ages.append(sample["age"])
+
+    images = np.array(images)
+    ages = np.array(ages)
+
+    x_train, x_test, y_train, y_test = train_test_split(images, ages, test_size=0.2, random_state=42)
+
+    x_train, x_val, y_train, y_val = train_test_split(x_train, y_train, test_size=0.2, random_state=42)
+
+    return (x_train, y_train), (x_val, y_val)
+
+def load_mri():
+
+    def preprocess(sample):
+        image = sample["image"]
+        image = np.array(image)
+        target_size = 224
+        img_shape = image.shape
+        bbox = sample["objects"]["bbox"][0]
+        # resize the image
+        image = cv2.resize(image, (target_size, target_size))
+        # normalize the image
+        image = image / 255.0
+        # update the bounding box
+        bbox = [
+            int(bbox[0] * (target_size / img_shape[1])),
+            int(bbox[1] * (target_size / img_shape[0])),
+            int(bbox[2] * (target_size / img_shape[1])),
+            int(bbox[3] * (target_size / img_shape[0])),
+        ]
+        return image, bbox
+    
+    ds = load_dataset("Francesco/abdomen-mri")
+    
+    train_x = []
+    train_y = []
+    for sample in ds["train"]:
+        #image, bbox = preprocess(sample)
         train_x.append(image)
         train_y.append(bbox)
 

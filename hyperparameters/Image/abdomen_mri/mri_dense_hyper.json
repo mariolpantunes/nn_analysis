@@ -11,7 +11,7 @@
     "n_outputs": 4,
     "epochs": 200,
     "model": "dense",
-    "dataset" : "license_plate",
-    "input_shape" : [50176],
+    "dataset" : "mri",
+    "input_shape" : [409600],
     "n_searches" : 100
 }
