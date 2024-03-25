@@ -21,7 +21,7 @@ def search(dataset_name, hyper_sets, x_train, y_train, val_data, output):
             max_trials=hyper_set["n_searches"],
             objective=objective,
             executions_per_trial=3,
-            overwrite=True,
+            overwrite=False,
             directory=output,
             project_name=f"{hyper_set['model'].__name__}",
             seed=42

@@ -179,7 +179,7 @@ for dataset in jobs:
     elif dataset == "utk_faces":
         train_data, test_data = dataset_loader.load_utk_faces()
     elif dataset == "mri":
-        train_data, test_data = dataset_loader.mri()
+        train_data, test_data = dataset_loader.load_mri()
     else:
         if not path.exists(dataset):
             raise ValueError("Dataset file does not exist.")

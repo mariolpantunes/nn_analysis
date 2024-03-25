@@ -121,7 +121,7 @@ class DenseModel(keras_tuner.HyperModel):
 
             
             for i in range(len(x)):
-                x_new[i, :] = rgb2gray(x[i,:]).flatten() if self.hyperparameters["dataset"] in ["cifar10", "cifar100","license_plate", "utk_faces"] else x[i,:].flatten()
+                x_new[i, :] = rgb2gray(x[i,:]).flatten() if self.hyperparameters["dataset"] in ["cifar10", "cifar100","license_plate", "utk_faces", "mri"] else x[i,:].flatten()
             
             x = x_new
 
@@ -130,7 +130,7 @@ class DenseModel(keras_tuner.HyperModel):
                 x_val_new = np.zeros((x_val.shape[0], x_val.shape[1]*x_val.shape[2]))
 
                 for i in range(len(x_val)):
-                    x_val_new[i, :] = rgb2gray(x_val[i,:]).flatten() if self.hyperparameters["dataset"] in ["cifar10", "cifar100", "license_plate", "utk_faces"] else x_val[i,:].flatten()
+                    x_val_new[i, :] = rgb2gray(x_val[i,:]).flatten() if self.hyperparameters["dataset"] in ["cifar10", "cifar100", "license_plate", "utk_faces", "mri"] else x_val[i,:].flatten()
 
                 validation_data = (x_val_new, y_val)
 
@@ -145,8 +145,10 @@ class DenseModel(keras_tuner.HyperModel):
         
         train_data, val_data = self.preprocess_data(x, y, validation_data, batch_size)
 
-        kwargs["callbacks"].append(keras.callbacks.EarlyStopping(monitor='val_loss', patience=30))
+        #kwargs["callbacks"].append(keras.callbacks.EarlyStopping(monitor='val_loss', patience=30))
+        
         train_time = time.time()
+
         model.fit(
             x=train_data,
             batch_size= batch_size,
@@ -166,11 +168,9 @@ class DenseModel(keras_tuner.HyperModel):
             predictions = [round(x[0]) for x in predictions] if self.loss == "binary_crossentropy" \
                             else [np.argmax(x) for x in predictions]
             
-            y_val =  [np.argmax(x) for x in validation_data[1]] if self.loss == "categorical_crossentropy" else validation_data[1]
-            
-            results = {'mcc' : matthews_corrcoef(y_val, predictions),
-                    'acc' : accuracy_score(y_val, predictions), 
-                    'f1-score' : f1_score(y_val, predictions, average="macro"),
+            results = {'mcc' : matthews_corrcoef(validation_data[1], predictions),
+                    'acc' : accuracy_score(validation_data[1], predictions), 
+                    'f1-score' : f1_score(validation_data[1], predictions, average="macro"),
                     'train_time' : train_time,
                     'infer_time' : infer_time}
             
@@ -332,7 +332,7 @@ class CNNModel(keras_tuner.HyperModel):
 
         train_data, val_data = self.preprocess_data(x, y, validation_data, batch_size)
 
-        kwargs["callbacks"].append(keras.callbacks.EarlyStopping(monitor='val_loss', patience=30))
+        #kwargs["callbacks"].append(keras.callbacks.EarlyStopping(monitor='val_loss', patience=30))
 
         train_time = time.time()
         model.fit(
@@ -353,13 +353,11 @@ class CNNModel(keras_tuner.HyperModel):
             infer_time = time.time() - infer_time
 
             predictions = [round(x[0]) for x in predictions] if self.loss == "binary_crossentropy" \
-                            else [np.argmax(x) for x in predictions]
-            
-            y_val =  [np.argmax(x) for x in validation_data[1]] if self.loss == "categorical_crossentropy" else validation_data[1]
+                            else [np.argmax(x) for x in predictions] 
 
-            results = {'mcc' : matthews_corrcoef(y_val, predictions), 
-                    'acc' : accuracy_score(y_val, predictions), 
-                    'f1-score' : f1_score(y_val, predictions, average="macro"),
+            results = {'mcc' : matthews_corrcoef(validation_data[1], predictions), 
+                    'acc' : accuracy_score(validation_data[1], predictions), 
+                    'f1-score' : f1_score(validation_data[1], predictions, average="macro"),
                     'train_time' : train_time,
                     'infer_time' : infer_time}
 
@@ -550,11 +548,9 @@ class RNNModel(keras_tuner.HyperModel):
             predictions = [round(x[0]) for x in predictions] if self.loss == "binary_crossentropy" \
                             else [np.argmax(x) for x in predictions]
             
-            y_val =  [np.argmax(x) for x in validation_data[1]] if self.loss == "categorical_crossentropy" else validation_data[1]
-
-            results = {'mcc' : matthews_corrcoef(y_val, predictions), 
-                    'acc' : accuracy_score(y_val, predictions), 
-                    'f1-score' : f1_score(y_val, predictions, average="macro"),
+            results = {'mcc' : matthews_corrcoef(validation_data[1], predictions), 
+                    'acc' : accuracy_score(validation_data[1], predictions), 
+                    'f1-score' : f1_score(validation_data[1], predictions, average="macro"),
                     'train_time' : train_time,
                     'infer_time' : infer_time}
 

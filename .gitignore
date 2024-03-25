@@ -136,3 +136,4 @@ dmypy.json
 results/
 running/
 *ipynb
+*.zip

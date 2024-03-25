@@ -252,18 +252,18 @@ def load_mri():
     train_y = []
     for sample in ds["train"]:
         #image, bbox = preprocess(sample)
-        train_x.append(image)
-        train_y.append(bbox)
+        train_x.append(sample["image"])
+        train_y.append(sample["objects"]["bbox"][0])
 
     train_x = np.array(train_x)
     train_y = np.array(train_y)
-
+    print(train_x.shape)
     val_x = []
     val_y = []
     for sample in ds["validation"]:
-        image, bbox = preprocess(sample)
-        val_x.append(image)
-        val_y.append(bbox)
+        #image, bbox = preprocess(sample)
+        val_x.append(sample["image"])
+        val_y.append(sample["objects"]["bbox"][0])
     val_x = np.array(val_x)
     val_y = np.array(val_y)
 

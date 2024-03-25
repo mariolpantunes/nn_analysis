@@ -1,5 +1,5 @@
 {
-    "dimension": 1,
+    "dimension": 2,
     "n_conv_layers" : [1, 4, 1],
     "n_kernels": [8, 64, 8],
     "kernel_size" : [3, 9, 2],
@@ -21,6 +21,6 @@
     "epochs": 200,
     "model": "cnn",
     "dataset" : "mri",
-    "input_shape" : [640, 640],
+    "input_shape" : [640, 640, 3],
     "n_searches" : 100
 }
