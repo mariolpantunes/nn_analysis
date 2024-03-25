@@ -106,9 +106,6 @@ for test in hyperparameters:
     hyper_set = hyperparameters[test]
     model_count= 0
     for dataset in datasets[test]:
-        #print(f"| | {dataset.capitalize()} | | |")
-        #print(f"| Hyperparameter | Performance | Training Time | Inference Time |")
-        #print("|---|---|---| ---- |")
         for model in fanova_results[dataset]:
             if model in models[test]:
                 for hyperparameter in hyper_set:
@@ -117,7 +114,6 @@ for test in hyperparameters:
         
                     idx = hyper_to_idx_cnn[hyperparameter] if "CNN" in model else  hyper_to_idx_dense[hyperparameter]
                     for i in range(3):
-                        #print(idx, fanova_results[dataset][model][i].quantify_importance((idx,))[(idx,)]['individual importance'])
                         results[hyperparameter][i] += fanova_results[dataset][model][i].quantify_importance((idx,))[(idx,)]['individual importance']
                 model_count +=1
     print(f"| | **{test}** | | |")
